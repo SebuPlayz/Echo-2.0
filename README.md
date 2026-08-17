@@ -94,7 +94,7 @@
 
 ### 2. Clone & Install Dependencies
 ```bash
-git clone https://github.com/SebuPlayz/Echo-2.0.git
+git clone https://github.com/your-username/echo-2.0.git
 cd echo-2.0
 pip install -r requirements.txt
 ```
@@ -164,6 +164,24 @@ python main.py
 | `!cleardj` | `!removedj` | Clear DJ role requirement |
 
 </details>
+
+---
+
+## 🌐 Custom Domain Setup (Cloudflare)
+
+> [!TIP]
+> To connect a custom domain (e.g., `https://yourdomain.com`):
+
+1. **Cloudflare DNS**: Point your domain to Cloudflare and add an `A` record pointing to your server IP with **Proxied (Orange Cloud ☁️)**.
+2. **Origin Rule**: Set Cloudflare Origin Rule mapping port `3000`.
+3. **Environment**: Update `.env` with `DASHBOARD_URL=https://yourdomain.com` and `DASHBOARD_REDIRECT_URI=https://yourdomain.com/auth/callback`.
+4. **Discord Portal**: Add `https://yourdomain.com/auth/callback` under Discord OAuth2 Redirects.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more details.
 
 ---
 
