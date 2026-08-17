@@ -94,7 +94,7 @@
 
 ### 2. Clone & Install Dependencies
 ```bash
-git clone https://github.com/your-username/echo-2.0.git
+git clone https://github.com/SebuPlayz/Echo-2.0.git
 cd echo-2.0
 pip install -r requirements.txt
 ```
