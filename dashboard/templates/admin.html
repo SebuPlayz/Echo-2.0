@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ bot_name }} — Owner Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #000000;
+      --bg-card: #09090b;
+      --bg-card-hover: #121215;
+      --sidebar-bg: #040405;
+      --border: #1f1f23;
+      --border-light: #27272a;
+      
+      --purple: #8b5cf6;
+      --purple-light: #c4b5fd;
+      --blue: #3b82f6;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --pink: #ec4899;
+
+      --text-hi: #ffffff;
+      --text-md: #a1a1aa;
+      --text-lo: #52525b;
+
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --r-sm: 10px;
+      --r-md: 16px;
+      --r-lg: 24px;
+      --r-xl: 32px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-hi);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Mesh Grid Overlay (Pure Dark) */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    /* Layout Wrapper */
+    .app-layout { display: flex; width: 100vw; min-height: 100vh; z-index: 1; }
+
+    /* Sidebar Navigation (Pitch Black) */
+    .sidebar {
+      width: 280px; flex-shrink: 0; background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 1.75rem 1.25rem; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100;
+    }
+
+    .sb-head { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem; }
+    .sb-logo { display: flex; align-items: center; gap: 0.85rem; text-decoration: none; padding: 0.25rem 0.5rem; }
+    .sb-logo img { width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--border); }
+    .sb-logo-txt { display: flex; flex-direction: column; }
+    .sb-logo-n { font-family: var(--font-head); font-weight: 800; font-size: 1.25rem; color: #ffffff; letter-spacing: -0.02em; }
+    .sb-logo-b { font-size: 0.7rem; font-weight: 800; color: #c4b5fd; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .sb-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: #18181b; border: 1px solid #f59e0b; color: #fbbf24;
+      font-family: var(--font-head); font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; border-radius: 100px;
+    }
+
+    .sb-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+    .sb-section-lbl { font-size: 0.72rem; font-weight: 800; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.11em; padding: 0.75rem 0.85rem 0.25rem; }
+
+    .sb-link {
+      display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.1rem; border-radius: 12px;
+      color: #ffffff !important; text-decoration: none; font-size: 0.92rem; font-weight: 700; transition: all 0.2s var(--ease);
+      cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.04); width: 100%; text-align: left;
+    }
+    .sb-link i { font-size: 1.15rem; width: 22px; text-align: center; color: #c4b5fd !important; transition: color 0.2s, transform 0.2s; }
+    .sb-link:hover { color: #ffffff !important; background: #18181b; border-color: #3f3f46; }
+    .sb-link:hover i { color: #e4e4e7 !important; transform: scale(1.1); }
+    .sb-link.active {
+      color: #ffffff !important; background: linear-gradient(135deg, #1f1f26, #141418) !important;
+      border: 1px solid #fbbf24 !important; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2) !important;
+    }
+    .sb-link.active i { color: #fbbf24 !important; }
+    .sb-cnt { margin-left: auto; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.55rem; border-radius: 100px; background: #27272a; color: #ffffff; }
+
+    .sb-user {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem; background: #141418; border: 1px solid #3f3f46; border-radius: 14px;
+    }
+    .sb-user-l { display: flex; align-items: center; gap: 0.75rem; }
+    .sb-user-l img { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #3f3f46; }
+    .sb-user-n { font-size: 0.9rem; font-weight: 800; color: #ffffff; }
+    .sb-user-r { font-size: 0.72rem; color: #c4b5fd; font-weight: 700; }
+    .sb-logout { color: #a1a1aa; transition: color 0.2s; font-size: 1.05rem; text-decoration: none; }
+    .sb-logout:hover { color: #f87171; }
+
+    /* Main Content Area */
+    .main-wrapper { flex: 1; margin-left: 280px; min-height: 100vh; display: flex; flex-direction: column; background: #000000; }
+
+    /* Top Sticky Header (Pure Black) */
+    .topnav {
+      height: 72px; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); background: #000000;
+      position: sticky; top: 0; z-index: 90;
+    }
+    .top-title { font-family: var(--font-head); font-size: 1.35rem; font-weight: 800; color: var(--text-hi); display: flex; align-items: center; gap: 0.75rem; }
+    .top-title i { color: var(--purple-light); }
+    .top-actions { display: flex; align-items: center; gap: 1rem; }
+
+    .btn-rfsh {
+      display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 1.15rem;
+      background: #09090b; border: 1px solid var(--border);
+      color: var(--text-md); border-radius: var(--r-sm); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: var(--font-body);
+    }
+    .btn-rfsh:hover { background: #18181b; color: var(--text-hi); border-color: var(--border-light); }
+    .btn-rfsh.spin i { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Content Body & Sections */
+    .content { padding: 2.5rem; flex: 1; max-width: 1540px; margin: 0 auto; width: 100%; }
+
+    .tab-section { display: none; opacity: 0; transform: translateY(10px); transition: all 0.3s var(--ease); }
+    .tab-section.active { display: block; opacity: 1; transform: translateY(0); }
+
+    /* Hero Banner Component */
+    .hero-banner {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem;
+      margin-bottom: 2.25rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.65rem;
+      background: #09090b; border: 1px solid var(--border-light);
+      padding: 0.35rem 0.95rem; border-radius: 100px; font-size: 0.75rem; font-weight: 800;
+      letter-spacing: 0.09em; text-transform: uppercase; color: #c4b5fd; margin-bottom: 0.85rem;
+    }
+    .pdot { width: 7px; height: 7px; border-radius: 50%; background: #a78bfa; box-shadow: 0 0 10px #a78bfa; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+
+    .hero-ttl {
+      font-family: var(--font-head); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 900;
+      letter-spacing: -0.035em; line-height: 1.1; color: #ffffff; margin-bottom: 0.5rem;
+    }
+    .hero-sub { font-size: 0.95rem; color: var(--text-md); max-width: 620px; line-height: 1.5; }
+
+    .hero-stats-row { display: flex; gap: 1.8rem; align-items: center; flex-wrap: wrap; background: #09090b; border: 1px solid var(--border); padding: 1.1rem 1.8rem; border-radius: var(--r-lg); }
+    .hstat .val { font-family: var(--font-head); font-size: 1.6rem; font-weight: 800; color: var(--text-hi); text-align: center; line-height: 1.1; }
+    .hstat .lbl { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-lo); margin-top: 0.25rem; text-align: center; }
+    .hdiv { width: 1px; height: 38px; background: var(--border); }
+
+    /* KPI Cards Grid (Pitch Black Cards) */
+    .kgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.25rem; margin-bottom: 2.25rem; }
+    @media (max-width: 1400px) { .kgrid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 840px) { .kgrid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .kgrid { grid-template-columns: 1fr; } }
+
+    .kpi {
+      position: relative; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 1.35rem; overflow: hidden;
+      transition: all 0.3s var(--ease); cursor: default;
+    }
+    .kpi:hover { transform: translateY(-4px); border-color: var(--border-light); background: var(--bg-card-hover); }
+
+    .kpi.purple { --ki-c: #c4b5fd; --ki-bg: #18181b; }
+    .kpi.blue   { --ki-c: #60a5fa; --ki-bg: #18181b; }
+    .kpi.green  { --ki-c: #34d399; --ki-bg: #18181b; }
+    .kpi.amber  { --ki-c: #fbbf24; --ki-bg: #18181b; }
+    .kpi.pink   { --ki-c: #f472b6; --ki-bg: #18181b; }
+    .kpi.cyan   { --ki-c: #22d3ee; --ki-bg: #18181b; }
+
+    .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.15rem; }
+    .kpi-lbl { font-size: 0.75rem; font-weight: 700; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.08em; }
+    .kpi-ico { width: 38px; height: 38px; border-radius: 12px; background: var(--ki-bg); color: var(--ki-c); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .kpi-val { font-family: var(--font-head); font-size: 2.1rem; font-weight: 800; letter-spacing: -0.035em; color: var(--text-hi); line-height: 1; margin-bottom: 0.4rem; }
+    .kpi-sub { font-size: 0.74rem; color: var(--text-md); font-weight: 500; display: flex; align-items: center; gap: 0.4rem; }
+    .kbar { position: absolute; bottom: 0; left: 0; width: 0%; height: 3px; background: #8b5cf6; transition: width 1.2s var(--ease); }
+
+    /* Audio Soundwave Equalizer */
+    .eq-wave { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+    .eq-bar { width: 3px; background: #34d399; border-radius: 2px; animation: eqWave 1.2s ease-in-out infinite alternate; }
+    .eq-bar:nth-child(1) { height: 40%; animation-delay: -0.2s; }
+    .eq-bar:nth-child(2) { height: 100%; animation-delay: -0.4s; }
+    .eq-bar:nth-child(3) { height: 60%; animation-delay: -0.6s; }
+    .eq-bar:nth-child(4) { height: 80%; animation-delay: -0.8s; }
+    @keyframes eqWave { 0% { height: 25%; } 100% { height: 100%; } }
+
+    /* Graph & System Cards Section */
+    .grid-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2.25rem; }
+    @media (max-width: 1100px) { .grid-2col { grid-template-columns: 1fr; } }
+
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 1.6rem; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
+    .card-ttl { font-family: var(--font-head); font-size: 1.1rem; font-weight: 800; color: var(--text-hi); display: flex; align-items: center; gap: 0.65rem; }
+    .card-ttl i { color: var(--purple-light); }
+
+    .chart-container { position: relative; height: 320px; width: 100%; }
+
+    /* System Status Items */
+    .ritem { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.1rem; }
+    .rrow { display: flex; justify-content: space-between; align-items: center; }
+    .rlbl { font-size: 0.82rem; font-weight: 600; color: var(--text-md); }
+    .rval { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--text-hi); }
+    .rtrack { height: 6px; background: #18181b; border-radius: 100px; overflow: hidden; }
+    .rfill { height: 100%; border-radius: 100px; transition: width 1.2s var(--ease); width: 0%; }
+    .rfill.p { background: #8b5cf6; }
+    .rfill.c { background: #06b6d4; }
+    .rfill.g { background: #10b981; }
+
+    .connlist { display: flex; flex-direction: column; gap: 0.6rem; }
+    .conn { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #000000; border: 1px solid var(--border); border-radius: var(--r-sm); }
+    .conn-l { display: flex; align-items: center; gap: 0.7rem; font-size: 0.88rem; font-weight: 600; color: var(--text-hi); }
+    .conn-l i { color: var(--purple-light); width: 18px; text-align: center; }
+    .cbadge { font-size: 0.72rem; font-weight: 800; padding: 0.2rem 0.65rem; border-radius: 100px; }
+    .cbadge.on { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    /* Managed Tables */
+    .tsec { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; }
+    .tbar { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; padding: 1.4rem 1.8rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .tttl { font-family: var(--font-head); font-size: 1.15rem; font-weight: 800; color: var(--text-hi); display: flex; align-items: center; gap: 0.75rem; }
+    .tttl i { color: var(--purple-light); font-size: 1.05rem; }
+    .tcnt { background: #18181b; border: 1px solid var(--border-light); color: #c4b5fd; font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.7rem; border-radius: 100px; }
+
+    .tbar-r { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; }
+    .srchwrp { position: relative; }
+    .srchwrp i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-lo); font-size: 0.85rem; pointer-events: none; }
+    .sinp {
+      background: #000000; border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 0.65rem 1.1rem 0.65rem 2.6rem; color: var(--text-hi); font-size: 0.88rem;
+      width: 270px; outline: none; transition: all 0.25s var(--ease); font-family: var(--font-body);
+    }
+    .sinp::placeholder { color: var(--text-lo); }
+    .sinp:focus { border-color: var(--border-light); background: #050507; width: 320px; }
+
+    .fpills { display: flex; gap: 0.35rem; background: #000000; border: 1px solid var(--border); padding: 0.3rem; border-radius: var(--r-sm); }
+    .fpill {
+      padding: 0.42rem 0.95rem; border-radius: 8px; background: transparent; border: none;
+      color: var(--text-lo); font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; font-family: var(--font-body);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .fpill.act { background: #18181b; color: #c4b5fd; border: 1px solid #27272a; }
+    .fpill:hover:not(.act) { color: var(--text-md); }
+    .fpill-num { background: #27272a; padding: 0.1rem 0.45rem; border-radius: 100px; font-size: 0.72rem; }
+
+    .twrp { overflow-x: auto; }
+    table.stbl { width: 100%; border-collapse: collapse; }
+    table.stbl thead th {
+      padding: 1rem 1.4rem; text-align: left; font-size: 0.72rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-lo);
+      border-bottom: 1px solid var(--border); white-space: nowrap; background: #000000;
+    }
+    table.stbl tbody tr { border-bottom: 1px solid #141417; transition: background 0.15s; }
+    table.stbl tbody tr:last-child { border-bottom: none; }
+    table.stbl tbody tr:hover { background: #121215; }
+    table.stbl tbody td { padding: 1.1rem 1.4rem; font-size: 0.9rem; vertical-align: middle; }
+
+    .scell { display: flex; align-items: center; gap: 1rem; }
+    .sav { width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0; object-fit: cover; border: 1px solid var(--border); }
+    .sph {
+      width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+      background: #18181b; display: flex; align-items: center;
+      justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 1.2rem;
+      color: #fff; border: 1px solid var(--border-light);
+    }
+    .snm { font-weight: 700; color: var(--text-hi); font-size: 0.95rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .sid { font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-lo); margin-top: 0.2rem; }
+
+    .badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; padding: 0.25rem 0.65rem; border-radius: 100px; white-space: nowrap; }
+    .badge i { font-size: 0.68rem; }
+    .b247 { background: #18181b; color: #c4b5fd; border: 1px solid #27272a; }
+    .b247-btn { background: #141417; border: 1px solid var(--border-light); color: #c4b5fd; padding: 0.45rem 0.85rem; border-radius: var(--r-sm); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); }
+    .b247-btn:hover { background: #27272a; }
+    .bplay { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .bpause { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .bidle { background: #141417; color: var(--text-lo); border: 1px solid var(--border); }
+    .bvc { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    .track-pill {
+      display: inline-flex; align-items: center; gap: 0.6rem; max-width: 280px;
+      background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 0.3rem 0.75rem; border-radius: 100px; text-decoration: none; transition: all 0.2s;
+    }
+    .track-pill:hover { background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.4); transform: scale(1.02); }
+    .track-title { font-size: 0.78rem; font-weight: 700; color: #34d399; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .arow { display: flex; gap: 0.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.95rem;
+      border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      border: 1px solid transparent; transition: all 0.2s var(--ease); white-space: nowrap;
+      text-decoration: none; font-family: var(--font-body);
+    }
+    .btn-g { background: #18181b; border-color: var(--border-light); color: var(--text-hi); }
+    .btn-g:hover { background: #27272a; border-color: #3f3f46; }
+    .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #000; font-weight: 800; }
+    .btn-gold:hover { background: linear-gradient(135deg, #fbbf24, #f59e0b); transform: translateY(-1px); }
+    .btn-lv { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3); color: #f87171; }
+    .btn-lv:hover { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.5); transform: translateY(-1px); }
+
+    /* Active Streams Grid Section */
+    .streams-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+    @media (max-width: 1200px) { .streams-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .streams-grid { grid-template-columns: 1fr; } }
+
+    .stream-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg);
+      padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between;
+      gap: 1rem; transition: all 0.25s var(--ease);
+    }
+    .stream-card:hover { border-color: var(--border-light); transform: translateY(-4px); background: var(--bg-card-hover); }
+    .stream-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+    .stream-guild { display: flex; align-items: center; gap: 0.75rem; }
+    .stream-guild img { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); }
+    .stream-gnm { font-weight: 800; font-size: 0.92rem; color: var(--text-hi); }
+    .stream-vc { font-size: 0.75rem; color: var(--text-lo); display: flex; align-items: center; gap: 0.35rem; }
+
+    .stream-body { display: flex; gap: 1rem; align-items: center; background: #000000; padding: 0.85rem; border-radius: var(--r-md); border: 1px solid var(--border); }
+    .stream-art { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+    .stream-info { flex: 1; min-width: 0; }
+    .stream-song { font-weight: 700; font-size: 0.9rem; color: #34d399; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stream-artst { font-size: 0.78rem; color: var(--text-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0.15rem; }
+    .stream-acts { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+
+    /* Modal Component */
+    .mdrop { position: fixed; inset: 0; z-index: 900; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; padding: 1.25rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .mdrop.open { opacity: 1; pointer-events: auto; }
+    .mbox { background: #09090b; border: 1px solid var(--border-light); border-radius: var(--r-xl); width: 100%; max-width: 500px; transform: scale(0.92) translateY(18px); transition: transform 0.3s var(--ease); overflow: hidden; }
+    .mdrop.open .mbox { transform: scale(1) translateY(0); }
+    .mstrip { height: 4px; background: linear-gradient(90deg, #f59e0b, #8b5cf6, #10b981); }
+    .mbody { padding: 2.2rem; }
+    .mico { width: 60px; height: 60px; border-radius: 18px; background: #18181b; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; color: #fbbf24; font-size: 1.6rem; margin-bottom: 1.4rem; }
+    .mttl { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; color: var(--text-hi); margin-bottom: 0.5rem; }
+    .mdesc { font-size: 0.9rem; color: var(--text-md); line-height: 1.6; margin-bottom: 1.6rem; }
+
+    .form-grp { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .form-lbl { font-size: 0.8rem; font-weight: 700; color: var(--text-md); text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-inp, .form-sel {
+      background: #000000; border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 0.75rem 1rem; color: var(--text-hi); font-size: 0.9rem; outline: none;
+      font-family: var(--font-body); transition: border-color 0.2s; width: 100%;
+    }
+    .form-inp:focus, .form-sel:focus { border-color: #8b5cf6; }
+
+    .mtgt { background: #000000; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 0.85rem 1.1rem; margin-bottom: 1.6rem; display: flex; align-items: center; gap: 0.85rem; }
+    .mtgt i { color: #f87171; font-size: 1.1rem; }
+    .mtgt span { font-size: 0.95rem; font-weight: 700; color: var(--text-hi); }
+    .mtgt code { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-lo); display: block; margin-top: 0.25rem; }
+    .macts { display: flex; gap: 0.85rem; justify-content: flex-end; }
+    .btn-can { background: #18181b; border: 1px solid var(--border-light); color: var(--text-hi); border-radius: var(--r-sm); padding: 0.7rem 1.5rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); }
+    .btn-can:hover { background: #27272a; }
+    .btn-cfm { background: linear-gradient(135deg, #ef4444, #b91c1c); border: none; color: #fff; border-radius: var(--r-sm); padding: 0.7rem 1.5rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.55rem; font-family: var(--font-body); }
+    .btn-cfm:hover { transform: translateY(-1px); }
+
+    /* Toast Notification */
+    .twrap { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.6rem; }
+    .toast { display: flex; align-items: center; gap: 0.85rem; background: #09090b; border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 1rem 1.4rem; min-width: 320px; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.9); transform: translateX(120%); opacity: 0; transition: all 0.4s var(--ease); }
+    .toast.show { transform: translateX(0); opacity: 1; }
+    .tico { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+    .tico.ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tico.err { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .ttxt { font-size: 0.88rem; font-weight: 700; color: var(--text-hi); }
+    .tsub { font-size: 0.78rem; color: var(--text-md); margin-top: 0.15rem; }
+
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* Hybrid Mobile App Navigation & Responsive Styles */
+    .mob-menu-btn {
+      display: none; background: #121215; border: 1px solid var(--border); color: var(--text-hi);
+      width: 40px; height: 40px; border-radius: 10px; align-items: center; justify-content: center;
+      font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+    }
+
+    .mobile-bottom-nav { display: none; }
+    .sidebar-backdrop {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+      z-index: 9990; opacity: 0; pointer-events: none; transition: opacity 0.25s var(--ease);
+    }
+    .sidebar-backdrop.active { opacity: 1; pointer-events: auto; }
+
+    @media (max-width: 1024px) {
+      .mob-menu-btn { display: flex; }
+      
+      .sidebar {
+        position: fixed !important; top: 0; bottom: 0; left: 0;
+        z-index: 99999 !important;
+        background: #09090b !important;
+        border-right: 1.5px solid #27272a !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: translateX(-100%); width: 300px !important; padding: 1.75rem 1.25rem !important;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 25px 0 60px rgba(0, 0, 0, 0.95);
+        overflow-y: auto !important;
+      }
+      .sidebar.open { transform: translateX(0) !important; }
+
+      .sb-logo-n { color: #ffffff !important; font-size: 1.25rem !important; font-weight: 900 !important; }
+      .sb-logo-b { color: #c4b5fd !important; font-weight: 800 !important; }
+      .sb-section-lbl { color: #a1a1aa !important; font-weight: 800 !important; letter-spacing: 0.12em !important; font-size: 0.72rem !important; }
+      .sb-logo-txt, .sb-badge, .sb-section-lbl, .sb-link span, .sb-user-r, .sb-cnt { display: inline-flex !important; opacity: 1 !important; visibility: visible !important; }
+      .sb-link { color: #ffffff !important; font-weight: 700 !important; justify-content: flex-start !important; padding: 0.85rem 1.1rem !important; opacity: 1 !important; background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-radius: 12px !important; margin-bottom: 2px !important; }
+      .sb-link i { color: #c4b5fd !important; font-size: 1.15rem !important; opacity: 1 !important; }
+      .sb-link span { display: inline !important; opacity: 1 !important; color: #ffffff !important; font-weight: 700 !important; }
+      .sb-cnt { display: inline-block !important; background: #27272a !important; color: #ffffff !important; font-weight: 800 !important; }
+      .sb-user { justify-content: space-between !important; padding: 0.9rem !important; background: #141418 !important; border: 1px solid #3f3f46 !important; border-radius: 14px !important; }
+      .sb-user-n { color: #ffffff !important; font-weight: 800 !important; }
+      .sb-user-r { color: #c4b5fd !important; font-weight: 700 !important; }
+
+      .main-wrapper { margin-left: 0 !important; width: 100vw; padding-bottom: 70px; }
+
+      .topnav { padding: 0 1.25rem; height: 64px; }
+      .top-title { font-size: 1.1rem; }
+      .top-title i { font-size: 1rem; }
+      .rfsh-lbl { display: none; }
+
+      .mobile-bottom-nav {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+        background: #09090b !important; border-top: 1px solid var(--border);
+        z-index: 9000; justify-content: space-around; align-items: center; padding: 0 0.5rem;
+      }
+      .mnav-btn {
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+        background: transparent; border: none; color: var(--text-lo); font-family: var(--font-body);
+        font-size: 0.65rem; font-weight: 700; cursor: pointer; flex: 1; padding: 6px 0; transition: all 0.2s;
+      }
+      .mnav-btn i { font-size: 1.15rem; transition: transform 0.2s; }
+      .mnav-btn.active { color: #ffffff; }
+      .mnav-btn.active i { color: #c4b5fd; transform: translateY(-2px); }
+
+      .content { padding: 1rem 0.85rem 2rem; }
+      .hero-banner { padding: 1.25rem 1rem; flex-direction: column; align-items: stretch; gap: 1rem; }
+      .hero-ttl { font-size: 1.5rem; }
+      .hero-stats-row { grid-template-columns: repeat(3, 1fr); padding: 0.85rem; gap: 0.5rem; }
+      .hstat .val { font-size: 1.3rem; }
+      .hstat .lbl { font-size: 0.62rem; }
+
+      .grid-2col { grid-template-columns: 1fr !important; }
+      .streams-grid { grid-template-columns: 1fr !important; }
+      .connlist { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem !important; }
+
+      .tsec { border-radius: var(--r-md); }
+      .tbar { flex-direction: column; align-items: stretch; gap: 0.85rem; }
+      .tbar-r { width: 100%; flex-wrap: wrap; }
+      .sinp { width: 100% !important; }
+      .srchwrp { width: 100%; }
+
+      .mbox { width: 94vw !important; padding: 1.25rem !important; margin: 0 10px; }
+      .twrap { bottom: 80px; right: 1rem; left: 1rem; }
+      .toast { min-width: auto; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<div class="app-layout">
+
+  <!-- Sidebar Navigation (Pitch Black) -->
+  <aside class="sidebar">
+    <div>
+      <div class="sb-head">
+        <a href="/dashboard" class="sb-logo">
+          <img src="{{ bot_avatar | default('/static/Echo-avatar.png') }}" alt="{{ bot_name }}">
+          <div class="sb-logo-txt">
+            <span class="sb-logo-n">{{ bot_name }}</span>
+            <span class="sb-logo-b">Admin Console</span>
+          </div>
+        </a>
+        <div class="sb-badge"><i class="fa-solid fa-crown"></i> Owner Mode</div>
+      </div>
+
+      <nav class="sb-nav">
+        <div class="sb-section-lbl">Core Navigation</div>
+        <button class="sb-link active" onclick="switchTab('overview', this, event)">
+          <i class="fa-solid fa-chart-pie"></i> <span>Overview</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('servers', this, event)">
+          <i class="fa-solid fa-server"></i> <span>Servers</span> <span class="sb-cnt" id="sb-g-cnt">0</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('streams', this, event)">
+          <i class="fa-solid fa-compact-disc"></i> <span>Active Streams</span> <span class="sb-cnt" id="sb-v-cnt" style="color:#34d399">0</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('noprefix', this, event)">
+          <i class="fa-solid fa-crown"></i> <span>NoPrefix Users</span> <span class="sb-cnt" id="sb-nop-cnt" style="color:#fbbf24">0</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('broadcast', this, event)">
+          <i class="fa-solid fa-bullhorn" style="color:#f59e0b"></i> <span>Global Broadcast</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('homenotif', this, event)">
+          <i class="fa-solid fa-bell" style="color:#f59e0b"></i> <span>Home Banner Alerts</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('settings', this, event)">
+          <i class="fa-solid fa-sliders" style="color:#60a5fa"></i> <span>Global Settings</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('nodes', this, event)">
+          <i class="fa-solid fa-network-wired" style="color:#34d399"></i> <span>Lavalink Nodes</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('audit', this, event)">
+          <i class="fa-solid fa-shield-halved" style="color:#c4b5fd"></i> <span>Audit Logs</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('telemetry', this, event)">
+          <i class="fa-solid fa-microchip"></i> <span>Telemetry &amp; Performance</span>
+        </button>
+        <button class="sb-link" onclick="switchTab('tools', this, event)">
+          <i class="fa-solid fa-screwdriver-wrench"></i> <span>Admin Tools</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sb-user">
+      <div class="sb-user-l">
+        <img src="{{ avatar }}" alt="User Avatar">
+        <div>
+          <div class="sb-user-n">{{ session.username }}</div>
+          <div class="sb-user-r">Owner</div>
+        </div>
+      </div>
+      <a href="/auth/logout" class="sb-logout" title="Logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+
+    <!-- Top Sticky Header -->
+    <header class="topnav">
+      <div style="display:flex;align-items:center;gap:0.85rem">
+        <button class="mob-menu-btn" onclick="toggleMobileDrawer()"><i class="fa-solid fa-bars"></i></button>
+        <div class="top-title" id="top-title"><i class="fa-solid fa-chart-pie"></i> Owner Admin Overview</div>
+      </div>
+      <div class="top-actions">
+        <button class="btn-rfsh" id="rfsh-btn" onclick="doRefresh(this)"><i class="fa-solid fa-arrows-rotate"></i> <span class="rfsh-lbl">Refresh Telemetry</span></button>
+      </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <main class="content">
+
+      <!-- ================= SECTION 1: OVERVIEW ================= -->
+      <section id="tab-overview" class="tab-section active">
+        <!-- Hero Header -->
+        <div class="hero-banner">
+          <div>
+            <div class="eyebrow"><span class="pdot"></span> Real-time Telemetry Engine</div>
+            <h1 class="hero-ttl">System Overview</h1>
+            <p class="hero-sub">Global server orchestration, real-time audio stream metrics &amp; bot cluster management.</p>
+          </div>
+          <div class="hero-stats-row">
+            <div class="hstat">
+              <div class="val" id="h-g">--</div>
+              <div class="lbl">Servers</div>
+            </div>
+            <div class="hdiv"></div>
+            <div class="hstat">
+              <div class="val" id="h-u">--</div>
+              <div class="lbl">Members</div>
+            </div>
+            <div class="hdiv"></div>
+            <div class="hstat">
+              <div class="val" id="h-v" style="color: #34d399">--</div>
+              <div class="lbl">Active Streams</div>
+            </div>
+            <div class="hdiv"></div>
+            <div class="hstat">
+              <div class="val" id="h-p">--</div>
+              <div class="lbl">Ping</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔴/🟢 Web Dashboard Maintenance Quick Control Card -->
+        <div class="card" style="margin-bottom:1.5rem;background:linear-gradient(135deg, rgba(24, 24, 28, 0.95), rgba(9, 9, 11, 0.98));border:1px solid rgba(255,255,255,0.12);box-shadow:0 10px 30px rgba(0,0,0,0.8)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.2rem">
+            <div style="display:flex;align-items:center;gap:1.2rem">
+              <div id="maint-icon-box" style="width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:rgba(52, 211, 153, 0.15);border:1px solid rgba(52, 211, 153, 0.3);color:#34d399">
+                <i class="fa-solid fa-power-off"></i>
+              </div>
+              <div>
+                <div style="font-family:var(--font-head);font-weight:800;font-size:1.15rem;color:#ffffff" id="maint-status-title">Web Dashboard Status: ONLINE 🟢</div>
+                <div style="font-size:0.85rem;color:var(--text-md)" id="maint-status-desc">Public users can access the home page, guild player, and web dashboard.</div>
+              </div>
+            </div>
+            <button id="maint-toggle-btn" onclick="quickToggleMaintenance()" class="btn" style="background:rgba(239, 68, 68, 0.2);border:1px solid rgba(239, 68, 68, 0.4);color:#ef4444;font-weight:800;padding:0.75rem 1.4rem;border-radius:12px;font-size:0.9rem;transition:all 0.2s">
+              <i class="fa-solid fa-power-off"></i> TURN DASHBOARD OFF (MAINTENANCE)
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="kgrid">
+          <div class="kpi purple">
+            <div class="kpi-top">
+              <div class="kpi-lbl">Total Servers</div>
+              <div class="kpi-ico"><i class="fa-solid fa-server"></i></div>
+            </div>
+            <div class="kpi-val" id="k-g">--</div>
+            <div class="kpi-sub">Active guild connections</div>
+            <div class="kbar" id="kb-g"></div>
+          </div>
+
+          <div class="kpi blue">
+            <div class="kpi-top">
+              <div class="kpi-lbl">User Reach</div>
+              <div class="kpi-ico"><i class="fa-solid fa-users"></i></div>
+            </div>
+            <div class="kpi-val" id="k-u">--</div>
+            <div class="kpi-sub">Total members served</div>
+            <div class="kbar" id="kb-u"></div>
+          </div>
+
+          <div class="kpi green">
+            <div class="kpi-top">
+              <div class="kpi-lbl">Voice &amp; Music Active</div>
+              <div class="kpi-ico"><i class="fa-solid fa-compact-disc fa-spin"></i></div>
+            </div>
+            <div class="kpi-val" id="k-v">--</div>
+            <div class="kpi-sub" id="k-vsub">
+              <span class="eq-wave" id="eq-wave" style="display:none">
+                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+              </span>
+              <span id="k-vsub-txt">Playing: 0 • Paused: 0</span>
+            </div>
+            <div class="kbar" id="kb-v"></div>
+          </div>
+
+          <div class="kpi amber">
+            <div class="kpi-top">
+              <div class="kpi-lbl">RAM Usage</div>
+              <div class="kpi-ico"><i class="fa-solid fa-memory"></i></div>
+            </div>
+            <div class="kpi-val" id="k-r">--</div>
+            <div class="kpi-sub" id="k-cpu"><i class="fa-solid fa-microchip"></i> CPU: --%</div>
+            <div class="kbar" id="kb-r"></div>
+          </div>
+
+          <div class="kpi pink">
+            <div class="kpi-top">
+              <div class="kpi-lbl">Songs Played</div>
+              <div class="kpi-ico"><i class="fa-solid fa-music"></i></div>
+            </div>
+            <div class="kpi-val" id="k-s">--</div>
+            <div class="kpi-sub"><i class="fa-solid fa-chart-line"></i> All-time total plays</div>
+            <div class="kbar" id="kb-s"></div>
+          </div>
+
+          <div class="kpi cyan">
+            <div class="kpi-top">
+              <div class="kpi-lbl">Latency</div>
+              <div class="kpi-ico"><i class="fa-solid fa-bolt-lightning"></i></div>
+            </div>
+            <div class="kpi-val" id="k-l">--</div>
+            <div class="kpi-sub" id="k-up"><i class="fa-regular fa-clock"></i> Uptime: --</div>
+            <div class="kbar" id="kb-l"></div>
+          </div>
+        </div>
+
+        <!-- Telemetry Graph & Growth Analytics -->
+        <div class="grid-2col" style="margin-bottom:1.5rem">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-solid fa-users"></i> Servers &amp; User Reach Growth</div>
+              <span style="font-size:.72rem;color:var(--text-lo);font-family:var(--font-mono)">LIVE TELEMETRY</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="growthChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-solid fa-chart-line"></i> Real-Time Telemetry History</div>
+              <span style="font-size:.72rem;color:var(--text-lo);font-family:var(--font-mono)">POLLED EVERY 4S</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="telemetryChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:2.25rem">
+          <div class="card-head">
+            <div class="card-ttl"><i class="fa-solid fa-network-wired"></i> Cluster Services &amp; System Health</div>
+            <span style="font-size:0.72rem;color:#34d399;font-weight:700;font-family:var(--font-mono)">ALL SYSTEMS ONLINE</span>
+          </div>
+          <div class="connlist" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:1rem">
+            <div class="conn">
+              <div class="conn-l"><i class="fa-solid fa-server"></i> Discord Gateway</div>
+              <span class="cbadge on"><i class="fa-solid fa-check"></i> Online</span>
+            </div>
+            <div class="conn">
+              <div class="conn-l"><i class="fa-solid fa-database"></i> SQLite Database</div>
+              <span class="cbadge on"><i class="fa-solid fa-check"></i> Connected</span>
+            </div>
+            <div class="conn">
+              <div class="conn-l"><i class="fa-brands fa-discord"></i> Discord REST API</div>
+              <span class="cbadge on"><i class="fa-solid fa-check"></i> Active</span>
+            </div>
+            <div class="conn">
+              <div class="conn-l"><i class="fa-solid fa-music"></i> Lavalink Engine</div>
+              <span class="cbadge on"><i class="fa-solid fa-check"></i> Active</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.25rem">
+            <div>
+              <div class="rrow" style="margin-bottom:0.4rem"><span class="rlbl">Memory RSS</span><span class="rval" id="r-r-ov">-- MB</span></div>
+              <div class="rtrack"><div class="rfill p" id="rb-r-ov"></div></div>
+            </div>
+            <div>
+              <div class="rrow" style="margin-bottom:0.4rem"><span class="rlbl">CPU Usage</span><span class="rval" id="r-c-ov">--%</span></div>
+              <div class="rtrack"><div class="rfill c" id="rb-c-ov"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: SERVERS ================= -->
+      <section id="tab-servers" class="tab-section">
+        <div class="tsec">
+          <div class="tbar">
+            <div style="display:flex;align-items:center;gap:0.85rem">
+              <div class="tttl"><i class="fa-solid fa-server"></i> Managed Guild Servers</div>
+              <span class="tcnt" id="tcnt">0</span>
+            </div>
+            <div class="tbar-r">
+              <div class="srchwrp">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="sinp" id="srch" placeholder="Search servers, IDs, owners..." oninput="doFilter()">
+              </div>
+              <div class="fpills">
+                <button class="fpill act" data-f="all" onclick="setF('all',this)">All <span class="fpill-num" id="fc-a">0</span></button>
+                <button class="fpill" data-f="voice" onclick="setF('voice',this)"><i class="fa-solid fa-headphones"></i> In VC <span class="fpill-num" id="fc-v">0</span></button>
+                <button class="fpill" data-f="playing" onclick="setF('playing',this)"><i class="fa-solid fa-circle-play" style="color:#34d399"></i> Playing <span class="fpill-num" id="fc-p">0</span></button>
+                <button class="fpill" data-f="247" onclick="setF('247',this)"><i class="fa-solid fa-infinity" style="color:#c4b5fd"></i> 24/7 <span class="fpill-num" id="fc-247">0</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="twrp">
+            <table class="stbl">
+              <thead>
+                <tr>
+                  <th>Server</th>
+                  <th>Owner</th>
+                  <th>Members</th>
+                  <th>Voice &amp; Song Status</th>
+                  <th>24/7 Mode</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr>
+                  <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-lo)">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem;color:var(--purple)"></i>
+                    <p style="margin-top:0.8rem">Loading managed servers telemetry...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 3: ACTIVE STREAMS ================= -->
+      <section id="tab-streams" class="tab-section">
+        <div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">Active Audio Streams</h2>
+            <p style="font-size:0.88rem;color:var(--text-md)">Live audio stream monitor across all active servers.</p>
+          </div>
+          <span class="eyebrow" id="stream-cnt-badge"><span class="pdot"></span> 0 Active Streams</span>
+        </div>
+
+        <div class="streams-grid" id="streams-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:4rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl)">
+            <i class="fa-solid fa-compact-disc fa-spin" style="font-size:2.5rem;color:var(--text-lo);margin-bottom:1rem;display:block"></i>
+            <p style="color:var(--text-md)">Fetching active music streams...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: NOPREFIX USERS ================= -->
+      <section id="tab-noprefix" class="tab-section">
+        <div class="tsec">
+          <div class="tbar">
+            <div style="display:flex;align-items:center;gap:0.85rem">
+              <div class="tttl"><i class="fa-solid fa-crown" style="color:#fbbf24"></i> NoPrefix Access Manager</div>
+              <span class="tcnt" id="nop-tcnt" style="color:#fbbf24">0</span>
+            </div>
+            <div class="tbar-r">
+              <button class="btn btn-gold" onclick="openNoPrefixModal()"><i class="fa-solid fa-user-plus"></i> Grant NoPrefix Access</button>
+            </div>
+          </div>
+
+          <div class="twrp">
+            <table class="stbl">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>User ID</th>
+                  <th>Granted By</th>
+                  <th>Granted At</th>
+                  <th>Duration / Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="nop-tbody">
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:3rem;color:var(--text-lo)">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem;color:var(--amber)"></i>
+                    <p style="margin-top:0.8rem">Loading NoPrefix users list...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: GLOBAL BROADCAST ================= -->
+      <section id="tab-broadcast" class="tab-section">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">📢 Global Server Broadcast Engine</h2>
+          <p style="font-size:0.88rem;color:var(--text-md)">Send official announcement embeds and update messages directly to all connected servers in 1 click.</p>
+        </div>
+
+        <div class="grid-2col" style="align-items:flex-start">
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-solid fa-bullhorn" style="color:#f59e0b"></i> Broadcast Configuration</div>
+              <span class="badge b247"><i class="fa-solid fa-bolt"></i> Instant Delivery</span>
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Announcement Title</label>
+              <input type="text" class="form-inp" id="bc-title" placeholder="e.g. 🚀 Echo 2.0 Major Update & New Features!" value="🚀 Echo 2.0 Major Update" oninput="updateBcPreview()">
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Message Body (Supports Discord Markdown &amp; Emojis)</label>
+              <textarea class="form-inp" id="bc-msg" rows="6" style="resize:vertical" placeholder="Enter your announcement content here..." oninput="updateBcPreview()">We are excited to introduce major performance upgrades, faster song loading, and new custom commands across all servers! Enjoy the high-fidelity music experience!</textarea>
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Embed Accent Color</label>
+              <div style="display:flex;gap:0.6rem;align-items:center;margin-top:0.3rem;flex-wrap:wrap">
+                <button type="button" class="btn btn-g" style="border-color:#8b5cf6;color:#c4b5fd" onclick="setBcColor('#8b5cf6')"><i class="fa-solid fa-circle" style="color:#8b5cf6"></i> Purple</button>
+                <button type="button" class="btn btn-g" style="border-color:#f59e0b;color:#fbbf24" onclick="setBcColor('#f59e0b')"><i class="fa-solid fa-circle" style="color:#f59e0b"></i> Gold</button>
+                <button type="button" class="btn btn-g" style="border-color:#06b6d4;color:#22d3ee" onclick="setBcColor('#06b6d4')"><i class="fa-solid fa-circle" style="color:#06b6d4"></i> Cyan</button>
+                <button type="button" class="btn btn-g" style="border-color:#10b981;color:#34d399" onclick="setBcColor('#10b981')"><i class="fa-solid fa-circle" style="color:#10b981"></i> Emerald</button>
+                <button type="button" class="btn btn-g" style="border-color:#ef4444;color:#f87171" onclick="setBcColor('#ef4444')"><i class="fa-solid fa-circle" style="color:#ef4444"></i> Red</button>
+                <input type="color" id="bc-color-picker" value="#8b5cf6" style="width:38px;height:38px;padding:0;background:transparent;border:none;cursor:pointer" onchange="setBcColor(this.value)">
+              </div>
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Target Channel Mode</label>
+              <select class="form-sel" id="bc-target">
+                <option value="system">System / Default Text Channel (Recommended)</option>
+                <option value="first_text">First Available Text Channel</option>
+              </select>
+            </div>
+
+            <div style="margin-top:1.6rem;display:flex;justify-content:flex-end">
+              <button class="btn btn-gold" id="bc-btn" onclick="sendBroadcast()"><i class="fa-solid fa-paper-plane"></i> Send Broadcast to All Servers</button>
+            </div>
+          </div>
+
+          <!-- Live Preview Card -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-brands fa-discord"></i> Discord Component V2 Live Preview</div>
+              <span style="font-size:0.72rem;color:var(--text-lo);font-family:var(--font-mono)">REAL-TIME DISPLAY</span>
+            </div>
+
+            <div style="background:#09090b;border:1px solid var(--border);border-radius:var(--r-md);padding:1.4rem;position:relative">
+              <div id="bc-prev-strip" style="position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:12px 0 0 12px;background:#8b5cf6"></div>
+              <div style="padding-left:0.6rem">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem">
+                  <span style="font-size:1.1rem">👑</span>
+                  <span style="font-family:var(--font-head);font-weight:800;font-size:1.1rem;color:#ffffff" id="bc-prev-title">🚀 Echo 2.0 Major Update</span>
+                </div>
+                <div style="font-size:0.8rem;font-weight:700;color:var(--text-md);margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem">
+                  <span>ℹ️</span> <span>{{ bot_name }} Global Announcement</span>
+                </div>
+                <div style="font-size:0.9rem;color:var(--text-hi);line-height:1.6;white-space:pre-wrap;margin-bottom:1.2rem" id="bc-prev-msg">We are excited to introduce major performance upgrades, faster song loading, and new custom commands across all servers!</div>
+                <div style="font-size:0.75rem;color:var(--text-lo);border-top:1px solid var(--border);padding-top:0.75rem">
+                  🔘 Broadcasted by Bot Owner • Just Now
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: HOME BANNER ALERTS ================= -->
+      <section id="tab-homenotif" class="tab-section">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">🔔 Home Page Notification Banners</h2>
+          <p style="font-size:0.88rem;color:var(--text-md)">Publish custom banner announcements and maintenance alerts to the public website home page with custom expiration timers.</p>
+        </div>
+
+        <div class="grid-2col" style="align-items:flex-start;margin-bottom:2rem">
+          <!-- Creation Form Card -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-solid fa-bell" style="color:#f59e0b"></i> Create Home Banner Alert</div>
+              <span class="badge b247"><i class="fa-solid fa-clock"></i> Timed Expiry</span>
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Banner Title</label>
+              <input type="text" class="form-inp" id="hn-title" placeholder="e.g. 📢 Scheduled Maintenance / Update Notice">
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Notification Message</label>
+              <textarea class="form-inp" id="hn-msg" rows="4" style="resize:vertical" placeholder="Enter message text displayed on home banner..."></textarea>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+              <div class="form-grp">
+                <label class="form-lbl">Category / Type</label>
+                <select class="form-sel" id="hn-type">
+                  <option value="info">ℹ️ General Info</option>
+                  <option value="update">🚀 Feature Update</option>
+                  <option value="warning">⚠️ Warning Alert</option>
+                  <option value="maintenance">🛠️ System Maintenance</option>
+                </select>
+              </div>
+
+              <div class="form-grp">
+                <label class="form-lbl">Visibility Duration (Expiry Timer)</label>
+                <select class="form-sel" id="hn-dur">
+                  <option value="lifetime">Permanent (Lifetime)</option>
+                  <option value="1h">1 Hour</option>
+                  <option value="6h">6 Hours</option>
+                  <option value="1d" selected>1 Day (24 Hours)</option>
+                  <option value="3d">3 Days</option>
+                  <option value="7d">7 Days</option>
+                  <option value="30d">30 Days</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:1.4rem;display:flex;justify-content:flex-end">
+              <button class="btn btn-gold" id="hn-btn" onclick="publishHomeNotification()"><i class="fa-solid fa-paper-plane"></i> Publish Home Banner</button>
+            </div>
+          </div>
+
+          <!-- Active Notifications Table -->
+          <div class="tsec" style="margin-top:0">
+            <div class="tbar">
+              <div style="display:flex;align-items:center;gap:0.85rem">
+                <div class="tttl"><i class="fa-solid fa-list-check" style="color:#f59e0b"></i> Active &amp; Past Home Banners</div>
+                <span class="tcnt" id="hn-tcnt" style="color:#f59e0b">0</span>
+              </div>
+            </div>
+
+            <div class="twrp">
+              <table class="stbl">
+                <thead>
+                  <tr>
+                    <th>Title &amp; Message</th>
+                    <th>Type</th>
+                    <th>Status / Expiry</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="hn-tbody">
+                  <tr>
+                    <td colspan="4" style="text-align:center;padding:2.5rem;color:var(--text-lo)">
+                      <i class="fa-solid fa-spinner fa-spin" style="font-size:1.6rem;color:var(--amber)"></i>
+                      <p style="margin-top:0.6rem">Loading home notifications...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: GLOBAL SETTINGS ================= -->
+      <section id="tab-settings" class="tab-section">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">🎛️ Global Bot Configuration</h2>
+          <p style="font-size:0.88rem;color:var(--text-md)">Configure default bot parameters, global volume limits, prefix, and maintenance mode.</p>
+        </div>
+
+        <div class="card" style="max-width:850px">
+          <div class="card-head">
+            <div class="card-ttl"><i class="fa-solid fa-sliders" style="color:#60a5fa"></i> Global System Parameters</div>
+            <span class="badge b247"><i class="fa-solid fa-sync"></i> Auto-Applied</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem">
+            <div class="form-grp">
+              <label class="form-lbl">Default Command Prefix</label>
+              <input type="text" class="form-inp" id="cfg-prefix" value=">" placeholder="e.g. > or !">
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Default Playback Volume (%)</label>
+              <input type="number" class="form-inp" id="cfg-vol" min="1" max="200" value="100">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem">
+            <div class="form-grp">
+              <label class="form-lbl">Max Queue Limit (Songs)</label>
+              <input type="number" class="form-inp" id="cfg-queue" min="10" max="2000" value="500">
+            </div>
+
+            <div class="form-grp">
+              <label class="form-lbl">Auto-Disconnect Idle Delay (Seconds)</label>
+              <input type="number" class="form-inp" id="cfg-idle" min="10" max="3600" value="180">
+            </div>
+          </div>
+
+          <div class="form-grp" style="margin-bottom:1.6rem">
+            <label class="form-lbl">Global Maintenance Mode</label>
+            <div style="display:flex;align-items:center;gap:1rem;background:#000000;padding:1rem;border:1px solid var(--border);border-radius:var(--r-sm);margin-top:0.4rem">
+              <input type="checkbox" id="cfg-maint" style="width:20px;height:20px;cursor:pointer">
+              <div>
+                <div style="font-weight:700;font-size:0.92rem;color:var(--text-hi)">Enable Maintenance Mode</div>
+                <div style="font-size:0.78rem;color:var(--text-lo)">When enabled, non-owner users will receive a maintenance notice when attempting to run commands.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-gold" id="cfg-btn" onclick="saveBotSettings()"><i class="fa-solid fa-check"></i> Save Bot Configuration</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: LAVALINK NODES ================= -->
+      <section id="tab-nodes" class="tab-section">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">🎵 Lavalink Audio Nodes Monitor</h2>
+          <p style="font-size:0.88rem;color:var(--text-md)">Real-time cluster health, latency ping, and active voice streams per node.</p>
+        </div>
+
+        <div class="streams-grid" id="nodes-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:4rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl)">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;color:var(--emerald)"></i>
+            <p style="margin-top:0.8rem;color:var(--text-md)">Loading Lavalink audio nodes telemetry...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: AUDIT LOGS ================= -->
+      <section id="tab-audit" class="tab-section">
+        <div class="tsec">
+          <div class="tbar">
+            <div style="display:flex;align-items:center;gap:0.85rem">
+              <div class="tttl"><i class="fa-solid fa-shield-halved" style="color:#c4b5fd"></i> Audit Action History</div>
+              <span class="tcnt" id="audit-tcnt" style="color:#c4b5fd">0</span>
+            </div>
+            <div class="tbar-r">
+              <div class="srchwrp">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="sinp" id="audit-srch" placeholder="Search audit logs..." oninput="filterAuditLogs()">
+              </div>
+            </div>
+          </div>
+
+          <div class="twrp">
+            <table class="stbl">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action Title</th>
+                  <th>Description</th>
+                  <th>Performed By</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody">
+                <tr>
+                  <td colspan="4" style="text-align:center;padding:3rem;color:var(--text-lo)">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem;color:var(--purple)"></i>
+                    <p style="margin-top:0.8rem">Loading audit activity logs...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 5: TELEMETRY ================= -->
+      <section id="tab-telemetry" class="tab-section">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">System Telemetry &amp; Performance</h2>
+          <p style="font-size:0.88rem;color:var(--text-md)">In-depth resource analytics and server response metrics.</p>
+        </div>
+
+        <div class="grid-2col" style="margin-bottom:1.5rem">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-solid fa-memory"></i> RAM Consumption (RSS MB)</div>
+              <span class="rval" id="tel-mem-val">-- MB</span>
+            </div>
+            <div class="chart-container" style="height:250px">
+              <canvas id="ramChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-ttl"><i class="fa-solid fa-microchip"></i> CPU Load (%)</div>
+              <span class="rval" id="tel-cpu-val">--%</span>
+            </div>
+            <div class="chart-container" style="height:250px">
+              <canvas id="cpuChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-ttl"><i class="fa-solid fa-bolt"></i> Gateway Latency Trend (ms)</div>
+            <span class="rval" id="tel-lat-val">-- ms</span>
+          </div>
+          <div class="chart-container" style="height:220px">
+            <canvas id="latChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 6: TOOLS ================= -->
+      <section id="tab-tools" class="tab-section">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">Admin Control Tools &amp; Cog Reloader</h2>
+          <p style="font-size:0.88rem;color:var(--text-md)">One-click module reloaders, memory garbage collection, and utility tools.</p>
+        </div>
+
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-head">
+            <div class="card-ttl"><i class="fa-solid fa-arrows-rotate" style="color:#34d399"></i> Live Cog Module Reloader</div>
+            <span style="font-size:0.72rem;color:var(--text-lo);font-family:var(--font-mono)">HOT-RELOAD NO RESTART</span>
+          </div>
+          <div class="streams-grid" id="cogs-grid">
+            <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-lo)">Loading cogs list...</div>
+          </div>
+        </div>
+
+        <div class="streams-grid">
+          <div class="card">
+            <div class="card-ttl" style="margin-bottom:0.8rem"><i class="fa-solid fa-broom" style="color:#06b6d4"></i> Force Garbage Collection</div>
+            <p style="font-size:0.85rem;color:var(--text-md);margin-bottom:1.2rem">Run Python memory garbage collection (`gc.collect()`) to free unreferenced objects.</p>
+            <button class="btn btn-g" onclick="runGC()"><i class="fa-solid fa-broom"></i> Collect Memory Garbage</button>
+          </div>
+
+          <div class="card">
+            <div class="card-ttl" style="margin-bottom:0.8rem"><i class="fa-solid fa-arrows-rotate"></i> Sync Telemetry Data</div>
+            <p style="font-size:0.85rem;color:var(--text-md);margin-bottom:1.2rem">Force an immediate synchronization of all cluster stats, database connections, and voice streams.</p>
+            <button class="btn btn-g" onclick="doRefresh(this)"><i class="fa-solid fa-arrows-rotate"></i> Sync All Stats</button>
+          </div>
+
+          <div class="card">
+            <div class="card-ttl" style="margin-bottom:0.8rem"><i class="fa-solid fa-trash-can"></i> Flush Session Cache</div>
+            <p style="font-size:0.85rem;color:var(--text-md);margin-bottom:1.2rem">Clear session memory cache and reset telemetry history data points.</p>
+            <button class="btn btn-g" onclick="flushCache()"><i class="fa-solid fa-trash-can"></i> Flush Cache</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+</div>
+
+<!-- Leave Server Modal -->
+<div class="mdrop" id="modal">
+  <div class="mbox">
+    <div class="mstrip"></div>
+    <div class="mbody">
+      <div class="mico"><i class="fa-solid fa-right-from-bracket"></i></div>
+      <div class="mttl">Leave Server?</div>
+      <p class="mdesc">This will force <strong>{{ bot_name }}</strong> to disconnect, ending any active voice sessions and removing all bot access from the server.</p>
+      <div class="mtgt">
+        <i class="fa-solid fa-server"></i>
+        <div>
+          <span id="m-nm">--</span>
+          <code id="m-id">--</code>
+        </div>
+      </div>
+      <div class="macts">
+        <button class="btn-can" onclick="closeM()">Cancel</button>
+        <button class="btn-cfm" id="m-btn" onclick="doLeave()"><i class="fa-solid fa-right-from-bracket"></i> Leave Server</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Grant / Edit NoPrefix Modal -->
+<div class="mdrop" id="nop-modal">
+  <div class="mbox">
+    <div class="mstrip" style="background:linear-gradient(90deg, #f59e0b, #d97706)"></div>
+    <div class="mbody">
+      <div class="mico"><i class="fa-solid fa-crown"></i></div>
+      <div class="mttl" id="nop-mttl">Grant NoPrefix Access</div>
+      <p class="mdesc">NoPrefix users can execute bot commands in any server without typing the command prefix.</p>
+      
+      <div class="form-grp">
+        <label class="form-lbl">Discord User ID</label>
+        <input type="text" class="form-inp" id="nop-uid" placeholder="e.g. 123456789012345678">
+      </div>
+
+      <div class="form-grp">
+        <label class="form-lbl">Duration</label>
+        <select class="form-sel" id="nop-dur">
+          <option value="lifetime">Lifetime (Permanent)</option>
+          <option value="1h">1 Hour</option>
+          <option value="1d">1 Day</option>
+          <option value="7d">7 Days</option>
+          <option value="30d">30 Days</option>
+        </select>
+      </div>
+
+      <div class="macts">
+        <button class="btn-can" onclick="closeNoPrefixModal()">Cancel</button>
+        <button class="btn btn-gold" id="nop-mbtn" onclick="submitNoPrefix()"><i class="fa-solid fa-check"></i> Save NoPrefix</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Broadcast Modal -->
+<div class="mdrop" id="bc-modal">
+  <div class="mbox">
+    <div class="mstrip" style="background:linear-gradient(90deg, #f59e0b, #8b5cf6, #06b6d4)"></div>
+    <div class="mbody">
+      <div class="mico" style="color:#f59e0b"><i class="fa-solid fa-bullhorn"></i></div>
+      <div class="mttl">Confirm Mass Broadcast</div>
+      <p class="mdesc">You are about to send an official announcement embed to all connected Discord servers simultaneously.</p>
+      
+      <div class="mtgt" style="flex-direction:column;align-items:flex-start;gap:0.4rem">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--text-hi)" id="bc-m-title">🚀 Announcement Title</div>
+        <div style="font-size:0.75rem;color:var(--text-md)" id="bc-m-info">Targeting System Channels across all active servers.</div>
+      </div>
+
+      <div class="macts">
+        <button class="btn-can" onclick="closeBcModal()">Cancel</button>
+        <button class="btn btn-gold" id="bc-cfm-btn" onclick="doConfirmBroadcast()"><i class="fa-solid fa-paper-plane"></i> Yes, Send Broadcast</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="twrap" id="twrap"></div>
+
+<script>
+// Tab Switching SPA Logic
+function switchTab(tabId, btnEl, ev) {
+  if (ev) {
+    try { ev.stopPropagation(); } catch(e){}
+  }
+  
+  // Highlight active sidebar button
+  document.querySelectorAll('.sb-link').forEach(b => {
+    b.classList.remove('active');
+    const onclickAttr = b.getAttribute('onclick') || '';
+    if (onclickAttr.includes("'" + tabId + "'")) {
+      b.classList.add('active');
+    }
+  });
+  if (btnEl && btnEl.classList.contains('sb-link')) {
+    btnEl.classList.add('active');
+  }
+
+  // Switch visible section
+  document.querySelectorAll('.tab-section').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+
+  const targetSection = document.getElementById('tab-' + tabId);
+  if (targetSection) {
+    targetSection.style.display = 'block';
+    // Small timeout to trigger opacity CSS animation
+    setTimeout(() => targetSection.classList.add('active'), 10);
+  }
+
+  const titleMap = {
+    'overview': '<i class="fa-solid fa-chart-pie"></i> Owner Admin Overview',
+    'servers': '<i class="fa-solid fa-server"></i> Managed Guild Servers',
+    'streams': '<i class="fa-solid fa-compact-disc"></i> Active Audio Streams',
+    'noprefix': '<i class="fa-solid fa-crown" style="color:#fbbf24"></i> NoPrefix Access Manager',
+    'broadcast': '<i class="fa-solid fa-bullhorn" style="color:#f59e0b"></i> Global Server Broadcast Engine',
+    'homenotif': '<i class="fa-solid fa-bell" style="color:#f59e0b"></i> Home Page Notification Banners',
+    'settings': '<i class="fa-solid fa-sliders" style="color:#60a5fa"></i> Global Bot Configuration',
+    'nodes': '<i class="fa-solid fa-network-wired" style="color:#34d399"></i> Lavalink Audio Nodes Monitor',
+    'audit': '<i class="fa-solid fa-shield-halved" style="color:#c4b5fd"></i> Audit Action History',
+    'telemetry': '<i class="fa-solid fa-microchip"></i> System Telemetry & Performance',
+    'tools': '<i class="fa-solid fa-screwdriver-wrench"></i> Admin Control Tools & Cog Reloader'
+  };
+  const topTitleEl = document.getElementById('top-title');
+  if (topTitleEl) topTitleEl.innerHTML = titleMap[tabId] || 'Owner Admin Panel';
+
+  // Trigger tab-specific data refresh
+  if (tabId === 'overview') loadStats();
+  if (tabId === 'servers') loadGuilds();
+  if (tabId === 'streams') loadStreams();
+  if (tabId === 'noprefix') loadNoPrefix();
+  if (tabId === 'homenotif') loadHomeNotifications();
+  if (tabId === 'settings') loadBotSettings();
+  if (tabId === 'nodes') loadLavalinkNodes();
+  if (tabId === 'audit') loadAuditLogs();
+  if (tabId === 'tools') loadCogsGrid();
+
+  // Scroll page to top instantly when tab changes
+  window.scrollTo(0, 0);
+
+  // Close mobile drawer
+  toggleMobileDrawer(false);
+}
+
+// Chart.js Configuration (Stealth Dark Theme)
+let mainChart, growthChart, ramChart, cpuChart, latChart;
+
+function initCharts() {
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: true, labels: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } } },
+    scales: {
+      x: { grid: { color: '#18181b' }, ticks: { color: '#52525b', font: { family: 'JetBrains Mono', size: 10 } } },
+      y: { grid: { color: '#18181b' }, ticks: { color: '#52525b', font: { family: 'JetBrains Mono', size: 10 } } }
+    }
+  };
+
+  const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+  growthChart = new Chart(ctxGrowth, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Total Users (Reach)', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.06)', fill: true, tension: 0.4, yAxisID: 'y1' },
+        { label: 'Guild Servers', data: [], borderColor: '#c4b5fd', backgroundColor: 'rgba(196,181,253,0.06)', fill: true, tension: 0.4, yAxisID: 'y' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true, labels: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } } },
+      scales: {
+        x: { grid: { color: '#18181b' }, ticks: { color: '#52525b', font: { family: 'JetBrains Mono', size: 10 } } },
+        y: { position: 'left', grid: { color: '#18181b' }, ticks: { color: '#c4b5fd', font: { family: 'JetBrains Mono', size: 10 } } },
+        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#3b82f6', font: { family: 'JetBrains Mono', size: 10 } } }
+      }
+    }
+  });
+
+  const ctxMain = document.getElementById('telemetryChart').getContext('2d');
+  mainChart = new Chart(ctxMain, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'CPU Load (%)', data: [], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.05)', fill: true, tension: 0.4 },
+        { label: 'RAM (MB)', data: [], borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.05)', fill: true, tension: 0.4 },
+        { label: 'Active Streams', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.4 }
+      ]
+    },
+    options: chartOptions
+  });
+
+  const ctxRam = document.getElementById('ramChart').getContext('2d');
+  ramChart = new Chart(ctxRam, {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Memory RSS (MB)', data: [], borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.08)', fill: true, tension: 0.4 }] },
+    options: chartOptions
+  });
+
+  const ctxCpu = document.getElementById('cpuChart').getContext('2d');
+  cpuChart = new Chart(ctxCpu, {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'CPU Load (%)', data: [], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)', fill: true, tension: 0.4 }] },
+    options: chartOptions
+  });
+
+  const ctxLat = document.getElementById('latChart').getContext('2d');
+  latChart = new Chart(ctxLat, {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Latency (ms)', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', fill: true, tension: 0.4 }] },
+    options: chartOptions
+  });
+}
+
+function updateCharts(history) {
+  if (!history || !history.length) return;
+  const labels = history.map(h => h.time);
+  const cpuData = history.map(h => h.cpu);
+  const memData = history.map(h => h.memory);
+  const latData = history.map(h => h.latency);
+  const strmData = history.map(h => h.active_streams);
+  const guildData = history.map(h => h.guilds || 0);
+  const userData = history.map(h => h.users || 0);
+
+  if (growthChart) {
+    growthChart.data.labels = labels;
+    growthChart.data.datasets[0].data = userData;
+    growthChart.data.datasets[1].data = guildData;
+    growthChart.update();
+  }
+
+  if (mainChart) {
+    mainChart.data.labels = labels;
+    mainChart.data.datasets[0].data = cpuData;
+    mainChart.data.datasets[1].data = memData;
+    mainChart.data.datasets[2].data = strmData;
+    mainChart.update();
+  }
+
+  if (ramChart) {
+    ramChart.data.labels = labels;
+    ramChart.data.datasets[0].data = memData;
+    ramChart.update();
+  }
+
+  if (cpuChart) {
+    cpuChart.data.labels = labels;
+    cpuChart.data.datasets[0].data = cpuData;
+    cpuChart.update();
+  }
+
+  if (latChart) {
+    latChart.data.labels = labels;
+    latChart.data.datasets[0].data = latData;
+    latChart.update();
+  }
+}
+
+// Telemetry & Guild Data Polling
+let allG = [], curF = 'all', pid = null;
+
+function an(el, t, sfx, dur) {
+  if (!el) return;
+  const t0 = performance.now();
+  (function tk(n) {
+    const p = Math.min((n - t0) / (dur || 900), 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    const v = Math.round(t * e);
+    el.textContent = (v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(1) + 'K' : v) + (sfx || '');
+    if (p < 1) requestAnimationFrame(tk);
+  })(performance.now());
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats');
+    const d = await r.json();
+    if (!d.ok) return;
+
+    an(document.getElementById('h-g'), d.total_guilds);
+    an(document.getElementById('h-u'), d.total_users);
+    an(document.getElementById('h-v'), d.active_players);
+    document.getElementById('h-p').textContent = d.latency_ms + 'ms';
+
+    an(document.getElementById('k-g'), d.total_guilds);
+    an(document.getElementById('k-u'), d.total_users);
+    an(document.getElementById('k-v'), d.voice_connections);
+
+    document.getElementById('sb-g-cnt').textContent = d.total_guilds;
+    document.getElementById('sb-v-cnt').textContent = d.active_players;
+
+    const txtSub = document.getElementById('k-vsub-txt');
+    const eqWave = document.getElementById('eq-wave');
+    txtSub.textContent = 'Playing: ' + d.active_players + ' • Paused: ' + d.paused_players;
+    eqWave.style.display = d.active_players > 0 ? 'inline-flex' : 'none';
+
+    an(document.getElementById('k-r'), d.memory_mb, ' MB');
+    document.getElementById('k-cpu').innerHTML = '<i class="fa-solid fa-microchip"></i> CPU: ' + d.cpu_percent + '%';
+
+    an(document.getElementById('k-s'), d.total_plays);
+    document.getElementById('k-l').textContent = d.latency_ms + ' ms';
+
+    const s = d.uptime_sec || 0;
+    const dd = Math.floor(s / 86400), hh = Math.floor((s % 86400) / 3600), mm = Math.floor((s % 3600) / 60);
+    const us = (dd > 0 ? dd + 'd ' : '') + hh + 'h ' + mm + 'm';
+    document.getElementById('k-up').innerHTML = '<i class="fa-regular fa-clock"></i> Uptime: ' + us;
+
+    document.getElementById('r-r-ov').textContent = d.memory_mb + ' MB';
+    document.getElementById('r-c-ov').textContent = d.cpu_percent + '%';
+    document.getElementById('tel-mem-val').textContent = d.memory_mb + ' MB';
+    document.getElementById('tel-cpu-val').textContent = d.cpu_percent + '%';
+    document.getElementById('tel-lat-val').textContent = d.latency_ms + ' ms';
+
+    const rp = Math.min((d.memory_mb / 512) * 100, 100);
+    const cp = Math.min(d.cpu_percent, 100);
+    const vp = Math.min((d.voice_connections / Math.max(d.total_guilds, 1)) * 100, 100);
+
+    setTimeout(() => {
+      document.getElementById('rb-r-ov').style.width = rp + '%';
+      document.getElementById('rb-c-ov').style.width = cp + '%';
+      document.getElementById('kb-g').style.width = Math.min(d.total_guilds * 5, 95) + '%';
+      document.getElementById('kb-u').style.width = Math.min((d.total_users / 10000) * 90, 95) + '%';
+      document.getElementById('kb-v').style.width = vp + '%';
+      document.getElementById('kb-r').style.width = rp + '%';
+      document.getElementById('kb-s').style.width = Math.min((d.total_plays / 1000) * 90, 95) + '%';
+      document.getElementById('kb-l').style.width = Math.max(95 - (d.latency_ms / 300) * 95, 20) + '%';
+    }, 150);
+
+    if (d.telemetry_history) {
+      updateCharts(d.telemetry_history);
+    }
+  } catch (e) {
+    console.error('[Admin Telemetry] Failed to load stats:', e);
+  }
+}
+
+async function loadGuilds() {
+  try {
+    const r = await fetch('/api/admin/guilds');
+    const d = await r.json();
+    if (!d.ok) return;
+    allG = d.guilds;
+    upCnts();
+    renderTbl();
+  } catch (e) {
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="7"><div style="text-align:center;padding:3rem;color:#f87171"><i class="fa-solid fa-circle-exclamation"></i><p>Failed to load server data</p></div></td></tr>';
+  }
+}
+
+async function loadStreams() {
+  try {
+    const r = await fetch('/api/admin/streams');
+    const d = await r.json();
+    if (!d.ok) return;
+
+    const grid = document.getElementById('streams-grid');
+    document.getElementById('stream-cnt-badge').innerHTML = '<span class="pdot"></span> ' + d.count + ' Active Streams';
+
+    if (!d.streams.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl)"><i class="fa-solid fa-music" style="font-size:2.2rem;color:var(--text-lo);margin-bottom:0.8rem;display:block"></i><p style="color:var(--text-md)">No active playing audio streams right now.</p></div>';
+      return;
+    }
+
+    grid.innerHTML = d.streams.map(s => {
+      const art = s.artwork_url || '/static/Echo-avatar.png';
+      const gIco = s.guild_icon ? '<img src="' + s.guild_icon + '" alt="">' : '<div style="width:36px;height:36px;border-radius:10px;background:#18181b;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">' + esc(s.guild_name).charAt(0) + '</div>';
+      return '<div class="stream-card">' +
+        '<div class="stream-top">' +
+          '<div class="stream-guild">' + gIco + '<div><div class="stream-gnm">' + esc(s.guild_name) + '</div><div class="stream-vc"><i class="fa-solid fa-headphones"></i> ' + esc(s.channel_name) + '</div></div></div>' +
+          '<span class="badge bplay"><span class="eq-wave"><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span></span> Playing</span>' +
+        '</div>' +
+        '<div class="stream-body">' +
+          '<img src="' + art + '" class="stream-art" alt="">' +
+          '<div class="stream-info">' +
+            '<div class="stream-song">' + esc(s.title) + '</div>' +
+            '<div class="stream-artst">' + esc(s.author || 'Unknown Artist') + '</div>' +
+            '<div class="stream-acts">' +
+              '<a href="/dashboard/' + s.guild_id + '" class="btn btn-g" style="padding:0.35rem 0.75rem;font-size:0.75rem"><i class="fa-solid fa-sliders"></i> Control Player</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('[Streams Error]', e);
+  }
+}
+
+// NoPrefix Users Management
+async function loadNoPrefix() {
+  try {
+    const r = await fetch('/api/admin/noprefix');
+    if (!r.ok) {
+      document.getElementById('nop-tbody').innerHTML = '<tr><td colspan="6"><div style="text-align:center;padding:3rem;color:#f87171"><i class="fa-solid fa-circle-exclamation"></i><p>Server Error (' + r.status + '): Failed to load NoPrefix data</p></div></td></tr>';
+      return;
+    }
+    const d = await r.json();
+    if (!d.ok) {
+      document.getElementById('nop-tbody').innerHTML = '<tr><td colspan="6"><div style="text-align:center;padding:3rem;color:#f87171"><i class="fa-solid fa-circle-exclamation"></i><p>' + esc(d.error || 'Failed to load NoPrefix data') + '</p></div></td></tr>';
+      return;
+    }
+
+    document.getElementById('sb-nop-cnt').textContent = d.count;
+    document.getElementById('nop-tcnt').textContent = d.count;
+
+    const tb = document.getElementById('nop-tbody');
+    if (!d.noprefix_users || !d.noprefix_users.length) {
+      tb.innerHTML = '<tr><td colspan="6"><div style="text-align:center;padding:3rem;color:var(--text-lo)"><i class="fa-solid fa-crown" style="font-size:2rem;margin-bottom:0.5rem;display:block;opacity:0.3"></i><p>No users have NoPrefix access granted yet.</p></div></td></tr>';
+      return;
+    }
+
+    tb.innerHTML = d.noprefix_users.map(u => {
+      const av = u.avatar ? '<img src="' + u.avatar + '" class="sav" alt="">' : '<div class="sph" style="background:#18181b;color:#fbbf24"><i class="fa-solid fa-user"></i></div>';
+      const isExp = u.is_expired;
+      const bClass = isExp ? 'bidle' : (u.expires_at ? 'b247' : 'bplay');
+      const bIco = isExp ? 'fa-clock' : (u.expires_at ? 'fa-hourglass-half' : 'fa-infinity');
+
+      return '<tr>' +
+        '<td><div class="scell">' + av + '<div><div class="snm">' + esc(u.username) + '</div><div class="sid">ID: ' + u.user_id + '</div></div></div></td>' +
+        '<td><code style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-md)">' + u.user_id + '</code></td>' +
+        '<td><div style="font-size:0.85rem;font-weight:700;color:var(--text-hi)">' + esc(u.added_by_name) + '</div></td>' +
+        '<td style="font-size:0.84rem;color:var(--text-lo)">' + u.added_at + '</td>' +
+        '<td><span class="badge ' + bClass + '"><i class="fa-solid ' + bIco + '"></i> ' + u.time_left_str + '</span></td>' +
+        '<td><div class="arow">' +
+          '<button class="btn btn-g" onclick="openNoPrefixModal(\'' + u.user_id + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+          '<button class="btn btn-lv" onclick="revokeNoPrefix(\'' + u.user_id + '\')"><i class="fa-solid fa-user-minus"></i> Revoke</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+  } catch (e) {
+    console.error('[NoPrefix Load Error]', e);
+    document.getElementById('nop-tbody').innerHTML = '<tr><td colspan="6"><div style="text-align:center;padding:3rem;color:#f87171"><i class="fa-solid fa-circle-exclamation"></i><p>Error loading NoPrefix data: ' + esc(e.message) + '</p></div></td></tr>';
+  }
+}
+
+function openNoPrefixModal(userId = '', dur = 'lifetime') {
+  document.getElementById('nop-uid').value = userId;
+  document.getElementById('nop-dur').value = dur;
+  document.getElementById('nop-mttl').textContent = userId ? 'Edit NoPrefix Duration' : 'Grant NoPrefix Access';
+  document.getElementById('nop-modal').classList.add('open');
+}
+
+function closeNoPrefixModal() {
+  document.getElementById('nop-modal').classList.remove('open');
+}
+
+async function submitNoPrefix() {
+  const uid = document.getElementById('nop-uid').value.trim();
+  const dur = document.getElementById('nop-dur').value;
+  if (!uid) {
+    mkToast('err', 'Validation Error', 'Please enter a valid Discord User ID.');
+    return;
+  }
+
+  const btn = document.getElementById('nop-mbtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+  try {
+    const r = await fetch('/api/admin/noprefix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: uid, duration: dur })
+    });
+    const d = await r.json();
+    closeNoPrefixModal();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'NoPrefix Updated', d.message);
+      await loadNoPrefix();
+    } else {
+      mkToast('err', 'Failed to grant NoPrefix', d.detail || 'Could not update NoPrefix status.');
+    }
+  } catch (e) {
+    closeNoPrefixModal();
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Save NoPrefix';
+  }
+}
+
+async function revokeNoPrefix(userId) {
+  try {
+    const r = await fetch('/api/admin/noprefix/' + userId, { method: 'DELETE' });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'NoPrefix Revoked', d.message);
+      await loadNoPrefix();
+    } else {
+      mkToast('err', 'Failed to revoke', d.detail || 'Could not revoke NoPrefix.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  }
+}
+
+// Global Broadcast Engine JS
+let currentBcColor = '#8b5cf6';
+
+function setBcColor(colorHex) {
+  currentBcColor = colorHex;
+  const picker = document.getElementById('bc-color-picker');
+  if (picker) picker.value = colorHex;
+  const strip = document.getElementById('bc-prev-strip');
+  if (strip) strip.style.background = colorHex;
+}
+
+function updateBcPreview() {
+  const ttl = document.getElementById('bc-title').value.trim() || 'Official Announcement';
+  const msg = document.getElementById('bc-msg').value.trim() || 'Announcement content will appear here...';
+  document.getElementById('bc-prev-title').textContent = ttl;
+  document.getElementById('bc-prev-msg').textContent = msg;
+}
+
+function openBcModal() {
+  const title = document.getElementById('bc-title').value.trim() || 'Official Announcement';
+  const targetMode = document.getElementById('bc-target').value;
+  const targetTxt = targetMode === 'system' ? 'System / Default Channels' : 'First Available Text Channels';
+
+  document.getElementById('bc-m-title').textContent = title;
+  document.getElementById('bc-m-info').textContent = 'Targeting ' + targetTxt + ' across all connected servers.';
+  document.getElementById('bc-modal').classList.add('open');
+}
+
+function closeBcModal() {
+  document.getElementById('bc-modal').classList.remove('open');
+}
+
+function sendBroadcast() {
+  const message = document.getElementById('bc-msg').value.trim();
+  if (!message) {
+    mkToast('err', 'Validation Error', 'Please enter announcement message content.');
+    return;
+  }
+  openBcModal();
+}
+
+async function doConfirmBroadcast() {
+  const title = document.getElementById('bc-title').value.trim();
+  const message = document.getElementById('bc-msg').value.trim();
+  const targetMode = document.getElementById('bc-target').value;
+
+  const btn = document.getElementById('bc-cfm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Broadcasting...';
+
+  try {
+    const r = await fetch('/api/admin/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        message: message,
+        color: currentBcColor,
+        target_mode: targetMode
+      })
+    });
+    const d = await r.json();
+    closeBcModal();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Broadcast Sent!', d.message);
+    } else {
+      mkToast('err', 'Broadcast Failed', d.detail || d.error || 'Could not send broadcast.');
+    }
+  } catch (e) {
+    closeBcModal();
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Yes, Send Broadcast';
+  }
+}
+
+function upCnts() {
+  const v = allG.filter(g => g.voice_connected).length;
+  const p = allG.filter(g => g.is_playing).length;
+  const c247 = allG.filter(g => g.is_247).length;
+  document.getElementById('fc-a').textContent = allG.length;
+  document.getElementById('fc-v').textContent = v;
+  document.getElementById('fc-p').textContent = p;
+  document.getElementById('fc-247').textContent = c247;
+}
+
+function setF(f, btn) {
+  curF = f;
+  document.querySelectorAll('.fpill').forEach(b => b.classList.remove('act'));
+  btn.classList.add('act');
+  renderTbl();
+}
+
+function doFilter() { renderTbl(); }
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function escJ(s) {
+  if (!s) return '';
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function renderTbl() {
+  const q = (document.getElementById('srch').value || '').toLowerCase().trim();
+  const tb = document.getElementById('tbody');
+  const data = allG.filter(g => {
+    const m = g.name.toLowerCase().includes(q) || g.id.includes(q) || (g.owner_name || '').toLowerCase().includes(q);
+    if (!m) return false;
+    if (curF === 'voice') return g.voice_connected;
+    if (curF === 'playing') return g.is_playing;
+    if (curF === '247') return g.is_247;
+    return true;
+  });
+
+  document.getElementById('tcnt').textContent = data.length;
+  if (!data.length) {
+    tb.innerHTML = '<tr><td colspan="7"><div style="text-align:center;padding:3rem;color:var(--text-lo)"><i class="fa-solid fa-folder-open" style="font-size:2rem;margin-bottom:0.5rem;display:block"></i><p>No matching servers found</p></div></td></tr>';
+    return;
+  }
+
+  tb.innerHTML = data.map(g => {
+    const ico = g.icon ? '<img src="' + g.icon + '" class="sav" alt="">' : '<div class="sph">' + esc(g.name).charAt(0).toUpperCase() + '</div>';
+    const m247 = g.is_247 ? '<span class="badge b247"><i class="fa-solid fa-infinity"></i> 24/7 Enabled</span>' : '<span class="badge bidle">Off</span>';
+
+    let vcb;
+    if (g.is_playing) {
+      const trkName = g.current_track ? esc(g.current_track) : 'Music Streaming';
+      const shortTrk = trkName.length > 28 ? trkName.substring(0, 28) + '...' : trkName;
+      vcb = '<a href="/dashboard/' + g.id + '" class="track-pill" title="' + trkName + '">' +
+            '<span class="eq-wave"><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span></span>' +
+            '<span class="track-title">' + shortTrk + '</span>' +
+            '</a>';
+    } else if (g.is_paused) {
+      vcb = '<span class="badge bpause"><i class="fa-solid fa-circle-pause"></i> Paused</span>';
+    } else if (g.voice_connected) {
+      vcb = '<span class="badge bvc"><i class="fa-solid fa-headphones"></i> ' + esc(g.voice_channel_name || 'VC Connected') + '</span>';
+    } else {
+      vcb = '<span class="badge bidle"><i class="fa-regular fa-circle"></i> Idle</span>';
+    }
+
+    return '<tr>' +
+      '<td><div class="scell">' + ico + '<div><div class="snm">' + esc(g.name) + '</div><div class="sid">ID: ' + g.id + '</div></div></div></td>' +
+      '<td><div style="font-size:0.88rem;font-weight:700;color:var(--text-hi)">' + esc(g.owner_name || 'Unknown') + '</div><div style="font-size:0.74rem;color:var(--text-lo);font-family:var(--font-mono);margin-top:0.15rem">' + (g.owner_id || '') + '</div></td>' +
+      '<td><strong style="font-family:var(--font-head);font-size:1rem;color:var(--text-hi)">' + (g.member_count || 0).toLocaleString() + '</strong></td>' +
+      '<td>' + vcb + '</td>' +
+      '<td><button class="b247-btn" onclick="toggle247(\'' + g.id + '\')">' + m247 + '</button></td>' +
+      '<td style="font-size:0.84rem;color:var(--text-lo)">' + (g.joined_at || '--') + '</td>' +
+      '<td><div class="arow">' +
+        '<a href="/dashboard/' + g.id + '" class="btn btn-g"><i class="fa-solid fa-sliders"></i> Control Player</a>' +
+        '<button class="btn btn-lv" onclick="openM(\'' + g.id + '\',\'' + escJ(g.name) + '\')"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function toggle247(guildId) {
+  try {
+    const r = await fetch('/api/admin/guilds/' + guildId + '/toggle-247', { method: 'POST' });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', '24/7 Mode Toggled', d.message);
+      await loadGuilds();
+    } else {
+      mkToast('err', 'Failed to toggle 24/7', d.detail || 'Could not update 24/7 mode.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  }
+}
+
+function openM(id, name) {
+  pid = id;
+  document.getElementById('m-nm').textContent = name;
+  document.getElementById('m-id').textContent = id;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeM() {
+  document.getElementById('modal').classList.remove('open');
+  pid = null;
+}
+
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeM();
+});
+document.getElementById('nop-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeNoPrefixModal();
+});
+document.getElementById('bc-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeBcModal();
+});
+
+async function doLeave() {
+  if (!pid) return;
+  const btn = document.getElementById('m-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Leaving...';
+  try {
+    const r = await fetch('/api/admin/guilds/' + pid + '/leave', { method: 'POST' });
+    const d = await r.json();
+    closeM();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Left Server', d.message || 'Bot successfully disconnected from server.');
+      await loadGuilds();
+      await loadStats();
+    } else {
+      mkToast('err', 'Failed to Leave', d.detail || 'Could not leave the server.');
+    }
+  } catch (e) {
+    closeM();
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Leave Server';
+  }
+}
+
+function flushCache() {
+  mkToast('ok', 'Cache Flushed', 'Session cache and telemetry memory buffer cleared.');
+  loadStats();
+}
+
+function mkToast(type, title, sub) {
+  const w = document.getElementById('twrap'), el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = '<div class="tico ' + (type === 'ok' ? 'ok' : 'err') + '">' + (type === 'ok' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + '</div><div><div class="ttxt">' + esc(title) + '</div><div class="tsub">' + esc(sub) + '</div></div>';
+  w.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 450);
+  }, 3800);
+}
+
+async function doRefresh(btn) {
+  if (btn) btn.classList.add('spin');
+  await Promise.all([loadStats(), loadGuilds(), loadStreams(), loadNoPrefix(), loadHomeNotifications(), loadBotSettings(), loadLavalinkNodes(), loadAuditLogs(), loadCogsGrid()]);
+  if (btn) setTimeout(() => btn.classList.remove('spin'), 600);
+}
+
+// Home Notification Banners JS
+async function loadHomeNotifications() {
+  const tb = document.getElementById('hn-tbody');
+  try {
+    const r = await fetch('/api/admin/notifications');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.notifications || !d.notifications.length) {
+      tb.innerHTML = '<tr><td colspan="4"><div style="text-align:center;padding:2.5rem;color:var(--text-lo)"><i class="fa-solid fa-bell-slash" style="font-size:1.8rem;margin-bottom:0.5rem;display:block"></i>No home notifications published yet.</div></td></tr>';
+      document.getElementById('hn-tcnt').textContent = '0';
+      return;
+    }
+
+    document.getElementById('hn-tcnt').textContent = d.notifications.length;
+    tb.innerHTML = d.notifications.map(n => {
+      const isExp = n.is_expired;
+      const bClass = isExp ? 'bidle' : (n.expires_at ? 'b247' : 'bplay');
+      const bIco = isExp ? 'fa-clock' : (n.expires_at ? 'fa-hourglass-half' : 'fa-infinity');
+      const typeIcoMap = { 'info': 'ℹ️ Info', 'update': '🚀 Update', 'warning': '⚠️ Warning', 'maintenance': '🛠️ Maintenance' };
+
+      return '<tr>' +
+        '<td><div style="font-weight:700;font-size:0.88rem;color:var(--text-hi)">' + esc(n.title) + '</div><div style="font-size:0.78rem;color:var(--text-lo);margin-top:0.2rem">' + esc(n.message) + '</div></td>' +
+        '<td><span class="badge b247" style="background:#18181b">' + (typeIcoMap[n.type] || n.type) + '</span></td>' +
+        '<td><span class="badge ' + bClass + '"><i class="fa-solid ' + bIco + '"></i> ' + n.time_left_str + '</span></td>' +
+        '<td><button class="btn btn-lv" onclick="deleteHomeNotification(' + n.id + ')"><i class="fa-solid fa-trash"></i> Remove</button></td>' +
+      '</tr>';
+    }).join('');
+  } catch (e) {
+    console.error('[Home Notifications Load Error]', e);
+  }
+}
+
+async function publishHomeNotification() {
+  const title = document.getElementById('hn-title').value.trim();
+  const message = document.getElementById('hn-msg').value.trim();
+  const type = document.getElementById('hn-type').value;
+  const duration = document.getElementById('hn-dur').value;
+
+  if (!title || !message) {
+    mkToast('err', 'Validation Error', 'Please fill in both title and message content.');
+    return;
+  }
+
+  const btn = document.getElementById('hn-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
+
+  try {
+    const r = await fetch('/api/admin/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        message: message,
+        type: type,
+        duration: duration
+      })
+    });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Notification Published!', d.message);
+      document.getElementById('hn-title').value = '';
+      document.getElementById('hn-msg').value = '';
+      await loadHomeNotifications();
+    } else {
+      mkToast('err', 'Publish Failed', d.detail || 'Could not publish notification.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publish Home Banner';
+  }
+}
+
+async function deleteHomeNotification(notifId) {
+  try {
+    const r = await fetch('/api/admin/notifications/' + notifId, { method: 'DELETE' });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Notification Removed', d.message);
+      await loadHomeNotifications();
+    } else {
+      mkToast('err', 'Failed to remove', d.detail || 'Could not remove notification.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  }
+}
+
+// Global Bot Settings JS
+async function loadBotSettings() {
+  try {
+    const r = await fetch('/api/admin/settings');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.ok && d.settings) {
+      const s = d.settings;
+      document.getElementById('cfg-prefix').value = s.default_prefix || '>';
+      document.getElementById('cfg-vol').value = s.default_volume || 100;
+      document.getElementById('cfg-queue').value = s.max_queue_limit || 500;
+      document.getElementById('cfg-idle').value = s.auto_disconnect_sec || 180;
+      document.getElementById('cfg-maint').checked = !!s.maintenance_mode;
+    }
+  } catch (e) {
+    console.error('[Bot Settings Load Error]', e);
+  }
+}
+
+async function saveBotSettings() {
+  const prefix = document.getElementById('cfg-prefix').value.trim() || '>';
+  const vol = parseInt(document.getElementById('cfg-vol').value) || 100;
+  const queue = parseInt(document.getElementById('cfg-queue').value) || 500;
+  const idle = parseInt(document.getElementById('cfg-idle').value) || 180;
+  const maint = document.getElementById('cfg-maint').checked;
+
+  const btn = document.getElementById('cfg-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+  try {
+    const r = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        default_prefix: prefix,
+        default_volume: vol,
+        max_queue_limit: queue,
+        auto_disconnect_sec: idle,
+        maintenance_mode: maint
+      })
+    });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Settings Saved', d.message);
+    } else {
+      mkToast('err', 'Save Failed', d.detail || 'Could not update settings.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Bot Configuration';
+  }
+}
+
+// Lavalink Audio Nodes Monitor JS
+async function loadLavalinkNodes() {
+  const grid = document.getElementById('nodes-grid');
+  try {
+    const r = await fetch('/api/admin/lavalink');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.nodes || !d.nodes.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-lo)"><i class="fa-solid fa-network-wired" style="font-size:2rem;margin-bottom:0.5rem;display:block"></i>No active Lavalink nodes configured.</div>';
+      return;
+    }
+
+    grid.innerHTML = d.nodes.map(n => {
+      const isConn = n.is_connected;
+      const bClass = isConn ? 'b247' : 'bidle';
+      const bText = isConn ? 'Connected' : 'Offline / Reconnecting';
+      const bIco = isConn ? 'fa-check' : 'fa-triangle-exclamation';
+
+      return '<div class="card">' +
+        '<div class="card-head">' +
+          '<div class="card-ttl"><i class="fa-solid fa-server" style="color:#34d399"></i> Node: ' + esc(n.name) + '</div>' +
+          '<span class="badge ' + bClass + '"><i class="fa-solid ' + bIco + '"></i> ' + bText + '</span>' +
+        '</div>' +
+        '<div style="font-size:0.78rem;font-family:var(--font-mono);color:var(--text-lo);margin-bottom:1rem">' + esc(n.host) + ':' + n.port + '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">' +
+          '<div style="background:#09090b;padding:0.75rem;border-radius:var(--r-sm);border:1px solid var(--border)">' +
+            '<div style="font-size:0.7rem;color:var(--text-lo);text-transform:uppercase">Active Players</div>' +
+            '<div style="font-size:1.2rem;font-weight:800;color:#34d399">' + n.players_count + '</div>' +
+          '</div>' +
+          '<div style="background:#09090b;padding:0.75rem;border-radius:var(--r-sm);border:1px solid var(--border)">' +
+            '<div style="font-size:0.7rem;color:var(--text-lo);text-transform:uppercase">CPU / Memory</div>' +
+            '<div style="font-size:1.1rem;font-weight:700;color:#60a5fa">' + n.cpu_load + '% / ' + n.memory_mb + 'MB</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('[Lavalink Nodes Load Error]', e);
+  }
+}
+
+// Audit Logs JS
+let allAuditLogs = [];
+async function loadAuditLogs() {
+  try {
+    const r = await fetch('/api/admin/audit-logs');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.ok && d.audit_logs) {
+      allAuditLogs = d.audit_logs;
+      renderAuditLogs();
+    }
+  } catch (e) {
+    console.error('[Audit Logs Error]', e);
+  }
+}
+
+function renderAuditLogs() {
+  const q = (document.getElementById('audit-srch').value || '').toLowerCase().trim();
+  const tb = document.getElementById('audit-tbody');
+  const data = allAuditLogs.filter(l => l.title.toLowerCase().includes(q) || l.description.toLowerCase().includes(q) || l.username.toLowerCase().includes(q));
+
+  document.getElementById('audit-tcnt').textContent = data.length;
+  if (!data.length) {
+    tb.innerHTML = '<tr><td colspan="4"><div style="text-align:center;padding:3rem;color:var(--text-lo)"><i class="fa-solid fa-shield-halved" style="font-size:2rem;margin-bottom:0.5rem;display:block"></i>No audit logs recorded yet.</div></td></tr>';
+    return;
+  }
+
+  tb.innerHTML = data.map(l => {
+    return '<tr>' +
+      '<td style="font-size:0.8rem;color:var(--text-lo);font-family:var(--font-mono)">' + l.created_at + '</td>' +
+      '<td><div style="font-weight:700;font-size:0.88rem;color:' + l.color_hex + '">' + esc(l.title) + '</div></td>' +
+      '<td style="font-size:0.85rem;color:var(--text-hi);line-height:1.4">' + esc(l.description) + '</td>' +
+      '<td><span class="badge b247"><i class="fa-solid fa-user-shield"></i> ' + esc(l.username) + '</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function filterAuditLogs() { renderAuditLogs(); }
+
+// Cog Module Reloader JS
+async function loadCogsGrid() {
+  const grid = document.getElementById('cogs-grid');
+  try {
+    const r = await fetch('/api/admin/cogs');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.ok && d.cogs) {
+      grid.innerHTML = d.cogs.map(c => {
+        return '<div style="background:#09090b;border:1px solid var(--border);border-radius:var(--r-md);padding:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">' +
+          '<div>' +
+            '<div style="font-weight:700;font-size:0.9rem;color:var(--text-hi);margin-bottom:0.2rem"><i class="fa-solid fa-puzzle-piece" style="color:#c4b5fd"></i> ' + esc(c.name) + '</div>' +
+            '<div style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-lo)">' + esc(c.extension) + '</div>' +
+          '</div>' +
+          '<button class="btn btn-g" style="margin-left:auto" onclick="reloadCog(\'' + c.name + '\', this)"><i class="fa-solid fa-arrows-rotate"></i> Reload</button>' +
+        '</div>';
+      }).join('');
+    }
+  } catch (e) {
+    console.error('[Cogs Load Error]', e);
+  }
+}
+
+async function reloadCog(cogName, btn) {
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  }
+  try {
+    const r = await fetch('/api/admin/cogs/' + cogName + '/reload', { method: 'POST' });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Cog Reloaded', d.message);
+    } else {
+      mkToast('err', 'Reload Failed', d.detail || 'Could not reload extension.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Reload';
+    }
+  }
+}
+
+let currentMaintenanceMode = false;
+
+function updateMaintenanceUI(isMaint) {
+  currentMaintenanceMode = !!isMaint;
+  const iconBox = document.getElementById('maint-icon-box');
+  const titleEl = document.getElementById('maint-status-title');
+  const descEl = document.getElementById('maint-status-desc');
+  const btnEl = document.getElementById('maint-toggle-btn');
+  const chkEl = document.getElementById('cfg-maint');
+
+  if (chkEl) chkEl.checked = currentMaintenanceMode;
+
+  if (currentMaintenanceMode) {
+    if (iconBox) {
+      iconBox.style.background = 'rgba(239, 68, 68, 0.18)';
+      iconBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      iconBox.style.color = '#ef4444';
+      iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    }
+    if (titleEl) titleEl.innerHTML = 'Web Dashboard Status: OFF (MAINTENANCE) 🔴';
+    if (descEl) descEl.innerHTML = 'Web player &amp; dashboard links are locked for public users. Non-owners see maintenance screen.';
+    if (btnEl) {
+      btnEl.style.background = 'rgba(52, 211, 153, 0.2)';
+      btnEl.style.borderColor = 'rgba(52, 211, 153, 0.4)';
+      btnEl.style.color = '#34d399';
+      btnEl.innerHTML = '<i class="fa-solid fa-play"></i> TURN DASHBOARD ONLINE (ACTIVE)';
+    }
+  } else {
+    if (iconBox) {
+      iconBox.style.background = 'rgba(52, 211, 153, 0.15)';
+      iconBox.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+      iconBox.style.color = '#34d399';
+      iconBox.innerHTML = '<i class="fa-solid fa-power-off"></i>';
+    }
+    if (titleEl) titleEl.innerHTML = 'Web Dashboard Status: ONLINE 🟢';
+    if (descEl) descEl.innerHTML = 'Public users can access the home page, guild player, and web dashboard.';
+    if (btnEl) {
+      btnEl.style.background = 'rgba(239, 68, 68, 0.2)';
+      btnEl.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      btnEl.style.color = '#ef4444';
+      btnEl.innerHTML = '<i class="fa-solid fa-power-off"></i> TURN DASHBOARD OFF (MAINTENANCE)';
+    }
+  }
+}
+
+async function quickToggleMaintenance() {
+  const newTargetState = !currentMaintenanceMode;
+  const btnEl = document.getElementById('maint-toggle-btn');
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating Status...';
+  }
+
+  try {
+    const prefix = document.getElementById('cfg-prefix') ? document.getElementById('cfg-prefix').value.trim() : '>';
+    const vol = document.getElementById('cfg-vol') ? parseInt(document.getElementById('cfg-vol').value) || 100 : 100;
+    const queue = document.getElementById('cfg-queue') ? parseInt(document.getElementById('cfg-queue').value) || 500 : 500;
+    const idle = document.getElementById('cfg-idle') ? parseInt(document.getElementById('cfg-idle').value) || 180 : 180;
+
+    const r = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        default_prefix: prefix,
+        default_volume: vol,
+        max_queue_limit: queue,
+        auto_disconnect_sec: idle,
+        maintenance_mode: newTargetState
+      })
+    });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      updateMaintenanceUI(newTargetState);
+      if (newTargetState) {
+        mkToast('warn', 'Dashboard Disabled', 'Web Dashboard is now OFF in Maintenance Mode.');
+      } else {
+        mkToast('ok', 'Dashboard Online', 'Web Dashboard is now ONLINE for all users.');
+      }
+    } else {
+      mkToast('err', 'Failed to toggle maintenance mode', d.detail || 'Error updating settings');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+  }
+}
+
+async function loadBotSettings() {
+  try {
+    const r = await fetch('/api/admin/settings');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.ok && d.settings) {
+      const s = d.settings;
+      if (document.getElementById('cfg-prefix')) document.getElementById('cfg-prefix').value = s.default_prefix || '>';
+      if (document.getElementById('cfg-vol')) document.getElementById('cfg-vol').value = s.default_volume || 100;
+      if (document.getElementById('cfg-queue')) document.getElementById('cfg-queue').value = s.max_queue_limit || 500;
+      if (document.getElementById('cfg-idle')) document.getElementById('cfg-idle').value = s.auto_disconnect_sec || 180;
+      updateMaintenanceUI(s.maintenance_mode);
+    }
+  } catch(e) {
+    console.error('[Load Settings Error]', e);
+  }
+}
+
+async function saveBotSettings() {
+  const prefix = document.getElementById('cfg-prefix').value.trim();
+  const vol = parseInt(document.getElementById('cfg-vol').value) || 100;
+  const queue = parseInt(document.getElementById('cfg-queue').value) || 500;
+  const idle = parseInt(document.getElementById('cfg-idle').value) || 180;
+  const maint = document.getElementById('cfg-maint').checked;
+
+  const btn = document.getElementById('cfg-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving Settings...';
+  }
+
+  try {
+    const r = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        default_prefix: prefix,
+        default_volume: vol,
+        max_queue_limit: queue,
+        auto_disconnect_sec: idle,
+        maintenance_mode: maint
+      })
+    });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      updateMaintenanceUI(maint);
+      mkToast('ok', 'Bot Settings Saved', d.message || 'Global parameters updated.');
+    } else {
+      mkToast('err', 'Failed to Save', d.detail || 'Could not update bot settings.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Bot Configuration';
+    }
+  }
+}
+
+async function runGC() {
+  try {
+    const r = await fetch('/api/admin/gc', { method: 'POST' });
+    const d = await r.json();
+    if (r.ok && d.ok) {
+      mkToast('ok', 'Garbage Collection Done', d.message);
+      await loadStats();
+    } else {
+      mkToast('err', 'GC Failed', d.detail || 'Could not run garbage collection.');
+    }
+  } catch (e) {
+    mkToast('err', 'Network Error', e.message);
+  }
+}
+
+function toggleMobileDrawer(forceState, ev) {
+  if (ev) {
+    try { ev.stopPropagation(); } catch(e){}
+  }
+  const sb = document.querySelector('.sidebar');
+  const bd = document.getElementById('sidebar-backdrop');
+  if (!sb || !bd) return;
+  const isOpen = forceState !== undefined ? forceState : !sb.classList.contains('open');
+  if (isOpen) {
+    sb.classList.add('open');
+    bd.classList.add('active');
+  } else {
+    sb.classList.remove('open');
+    bd.classList.remove('active');
+  }
+}
+
+function switchMobileTab(tabId, btn, ev) {
+  if (ev) {
+    try { ev.stopPropagation(); } catch(e){}
+  }
+  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const sbBtn = document.querySelector('.sb-link[onclick*="' + tabId + '"]');
+  switchTab(tabId, sbBtn, ev);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initCharts();
+  loadStats();
+  loadGuilds();
+  loadStreams();
+  loadNoPrefix();
+  loadBotSettings();
+  setInterval(loadStats, 4000);   // Real-time telemetry poll
+  setInterval(loadGuilds, 8000);  // Server list poll
+  setInterval(loadStreams, 6000); // Streams poll
+  setInterval(loadNoPrefix, 10000); // NoPrefix users poll
+});
+</script>
+
+<!-- Mobile Drawer Backdrop Overlay -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileDrawer(false)"></div>
+
+<!-- Mobile Bottom App Nav Bar -->
+<nav class="mobile-bottom-nav">
+  <button class="mnav-btn active" onclick="switchMobileTab('overview', this)"><i class="fa-solid fa-chart-pie"></i><span>Overview</span></button>
+  <button class="mnav-btn" onclick="switchMobileTab('servers', this)"><i class="fa-solid fa-server"></i><span>Servers</span></button>
+  <button class="mnav-btn" onclick="switchMobileTab('noprefix', this)"><i class="fa-solid fa-crown"></i><span>NoPrefix</span></button>
+  <button class="mnav-btn" onclick="switchMobileTab('broadcast', this)"><i class="fa-solid fa-bullhorn"></i><span>Broadcast</span></button>
+  <button class="mnav-btn" onclick="toggleMobileDrawer()"><i class="fa-solid fa-ellipsis"></i><span>More</span></button>
+</nav>
+</body>
+</html>

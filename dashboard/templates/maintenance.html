@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ bot_name }} — System Maintenance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #000000;
+      --card-bg: #09090b;
+      --border: #1f1f23;
+      --amber: #fbbf24;
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: #ffffff; font-family: var(--font-body);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+    }
+    .bg-grid {
+      position: fixed; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+    .mcard {
+      position: relative; z-index: 10; background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 24px; padding: 3rem 2.5rem; max-width: 520px; width: 100%; text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9); backdrop-filter: blur(20px);
+    }
+    .ico-box {
+      width: 72px; height: 72px; border-radius: 22px; background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.3); color: var(--amber); display: inline-flex;
+      align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1.5rem;
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+    }
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 0.5rem; background: #141418;
+      border: 1px solid rgba(251, 191, 36, 0.4); color: var(--amber); font-family: var(--font-mono);
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+      padding: 0.35rem 0.95rem; border-radius: 100px; margin-bottom: 1.25rem;
+    }
+    .mttl { font-family: var(--font-head); font-size: 2rem; font-weight: 900; letter-spacing: -0.03em; color: #ffffff; margin-bottom: 0.75rem; }
+    .mdesc { font-size: 0.95rem; color: #a1a1aa; line-height: 1.6; margin-bottom: 2rem; }
+    .actions { display: flex; flex-direction: column; gap: 0.85rem; align-items: center; width: 100%; }
+    .btn-pri {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.65rem;
+      background: #18181b; border: 1px solid #27272a; color: #ffffff; font-weight: 700;
+      font-size: 0.9rem; padding: 0.85rem 1.8rem; border-radius: 14px; text-decoration: none;
+      transition: all 0.2s; width: 100%;
+    }
+    .btn-pri:hover { background: #27272a; border-color: #3f3f46; transform: translateY(-2px); }
+    .admin-link { font-size: 0.8rem; color: #71717a; text-decoration: none; font-weight: 600; margin-top: 1rem; display: inline-block; transition: color 0.2s; }
+    .admin-link:hover { color: #c4b5fd; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="mcard">
+    <div class="ico-box"><i class="fa-solid fa-wrench"></i></div>
+    <div><span class="badge-pill"><i class="fa-solid fa-circle" style="font-size:0.5rem;color:#f59e0b"></i> System Maintenance Active</span></div>
+    <h1 class="mttl">Dashboard Temporarily Offline</h1>
+    <p class="mdesc">The {{ bot_name }} Web Console &amp; Player are currently undergoing scheduled telemetry maintenance. Public access will be restored shortly.</p>
+    <div class="actions">
+      {% if support_server %}
+      <a href="{{ support_server }}" target="_blank" class="btn-pri"><i class="fa-brands fa-discord"></i> Join Support Discord</a>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

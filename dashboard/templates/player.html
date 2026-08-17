@@ -1,0 +1,4247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ guild.name }} — Echo</title>
+  <link rel="stylesheet" href="/static/style.css?v=7.1">
+  <link rel="icon" href="/static/Echo-avatar.png">
+  <style>
+    html, body {
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      padding: 32px 24px;
+      background: var(--bg-deep);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      padding: 0 6px;
+      letter-spacing: -0.03em;
+    }
+
+    .brand img {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+    }
+
+    .back-link {
+      font-size: 13px;
+      color: var(--text-low);
+      padding: 0 6px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--text-hi);
+    }
+
+    .guild-tag {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .guild-tag img,
+    .guild-tag .fallback {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: var(--bg-panel-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-low);
+      font-weight: 700;
+    }
+
+    .guild-tag .name {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text-hi);
+    }
+
+    .guild-tag .level {
+      font-size: 11px;
+      color: var(--text-low);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .nav a,
+    .nav button {
+      all: unset;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-low);
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .nav a.active,
+    .nav button.active {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      color: var(--text-hi);
+      border-left: 3px solid var(--accent);
+      padding-left: 13px;
+    }
+
+    .nav a:hover,
+    .nav button:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-hi);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 0 6px;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-chip img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .user-chip .name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .logout-link {
+      font-size: 12px;
+      color: var(--text-low);
+      display: block;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .logout-link:hover {
+      color: var(--danger);
+    }
+
+    .main {
+      padding: 28px 36px 40px;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+      box-sizing: border-box;
+    }
+
+    .view {
+      display: none !important;
+    }
+
+    .view.active {
+      display: flex !important;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.25s ease-out;
+      width: 100%;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .stats-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .stats-track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.01);
+      border: 1px solid rgba(255,255,255,0.02);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+
+    .stats-track-item:hover {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.06);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    select.settings-select option {
+      background-color: #121214 !important;
+      color: #ffffff !important;
+    }
+
+    /* ── Now playing hero ─────────────────────────────────────── */
+    .np-card {
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 32px;
+      margin-bottom: 0;
+      background: var(--bg-panel);
+      border: 1px solid var(--line-strong);
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .np-art {
+      width: 240px;
+      height: 240px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--bg-panel-2), var(--bg-hover));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .np-art:hover {
+      transform: scale(1.03);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+
+    .np-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .np-title {
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text-hi);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .np-author {
+      color: var(--text-low);
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .np-requester {
+      color: rgba(255, 255, 255, 0.35);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .progress-wrap {
+      margin-top: 12px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--pink));
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.3s linear;
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-low);
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .btn-icon svg {
+      display: block;
+    }
+
+    .vol-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+      max-width: 280px;
+    }
+
+    .vol-row .vlabel {
+      font-size: 12px;
+      color: var(--text-low);
+      font-family: var(--font-mono);
+      width: 40px;
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .idle-card {
+      padding: 32px 24px;
+      text-align: center;
+      margin-bottom: 0;
+      border: 1px solid var(--line);
+    }
+
+    .idle-card .icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .idle-card h3 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .idle-card p {
+      font-size: 13px;
+      color: var(--text-low);
+      margin: 0;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .idle-card h3 {
+      margin-bottom: 8px;
+      font-size: 22px;
+    }
+
+    .idle-card p {
+      color: var(--text-low);
+      font-size: 15px;
+    }
+
+    /* ── Search bar ───────────────────────────────────────────── */
+    .search-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .search-row input {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-hi);
+      font-size: 14px;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s;
+    }
+
+    .search-row input:focus {
+      border-color: rgba(168, 85, 247, 0.5);
+      outline: none;
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+    }
+
+    .search-row input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* ── Play by Code Input ───────────────────────────────────── */
+    #play-by-code-input {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+      color: var(--text-hi) !important;
+      letter-spacing: 0.15em;
+      font-family: var(--font-mono) !important;
+      font-weight: 800 !important;
+      font-size: 15px !important;
+      text-transform: uppercase;
+      border-radius: var(--radius-sm);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.25s ease;
+    }
+
+    #play-by-code-input:focus {
+      border-color: rgba(255, 255, 255, 0.5) !important;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.08), inset 0 0 10px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      background: rgba(255, 255, 255, 0.07) !important;
+    }
+
+    #play-by-code-input::placeholder {
+      color: rgba(255, 255, 255, 0.3) !important;
+      font-weight: 500 !important;
+    }
+
+    /* ── Queue ────────────────────────────────────────────────── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .queue-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .queue-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .queue-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .queue-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.2s ease;
+    }
+
+    .queue-item:hover {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(2px);
+    }
+
+    .queue-index {
+      width: 24px;
+      text-align: center;
+      color: var(--text-low);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .queue-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .queue-info .t {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-hi);
+    }
+
+    .queue-info .a {
+      font-size: 13px;
+      color: var(--text-low);
+      margin-top: 2px;
+    }
+
+    .queue-dur {
+      font-size: 13px;
+      color: var(--text-low);
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+
+    .queue-remove {
+      flex-shrink: 0;
+      opacity: 0.5;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .queue-remove:hover {
+      opacity: 1;
+      color: var(--danger);
+    }
+
+    .empty-queue {
+      color: var(--text-low);
+      padding: 40px;
+      text-align: center;
+      font-size: 15px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px dashed var(--line);
+    }
+
+    /* ── Settings ─────────────────────────────────────────────── */
+    .settings-card {
+      padding: 32px;
+      max-width: 560px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .settings-row .label {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .settings-row .desc {
+      font-size: 13px;
+      color: var(--text-low);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .prefix-input {
+      width: 80px;
+      text-align: center;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-hi);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .prefix-input:focus {
+      border-color: rgba(255, 255, 255, 0.5);
+      outline: none;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+    }
+
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line-strong);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .toggle.active {
+      background: #10b981;
+      border-color: #10b981;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toggle.active::after {
+      transform: translateX(22px);
+    }
+
+    .locked-note {
+      font-size: 12px;
+      color: var(--warn);
+      margin-top: 16px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       PREMIUM PLAYLIST UI — Black & White Theme
+    ══════════════════════════════════════════════════════ */
+
+    /* ── Play-by-Code Banner ─── */
+    .pbc-banner {
+      margin-bottom: 20px;
+      padding: 22px 28px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg,
+        rgba(255,255,255,0.06) 0%,
+        rgba(255,255,255,0.03) 50%,
+        rgba(10,10,12,0.8) 100%);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+    }
+
+    .pbc-banner::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .pbc-icon-box {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+    }
+
+    .pbc-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 4px;
+    }
+
+    .pbc-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.5;
+      max-width: 380px;
+    }
+
+    .pbc-desc strong {
+      color: rgba(255,255,255,0.85);
+    }
+
+    .pbc-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    #play-by-code-input {
+      width: 160px;
+      padding: 11px 16px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,0.22) !important;
+      background: rgba(255,255,255,0.05) !important;
+      color: #ffffff !important;
+      letter-spacing: 0.18em;
+      font-family: var(--font-mono) !important;
+      font-weight: 800 !important;
+      font-size: 14px !important;
+      text-transform: uppercase;
+      transition: all 0.25s ease;
+      outline: none;
+    }
+
+    #play-by-code-input:focus {
+      border-color: rgba(255,255,255,0.6) !important;
+      background: rgba(255,255,255,0.09) !important;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1), 0 0 20px rgba(255,255,255,0.08) !important;
+    }
+
+    #play-by-code-input::placeholder {
+      color: rgba(255,255,255,0.3) !important;
+      font-weight: 600 !important;
+    }
+
+    .btn-pbc {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border-radius: 10px;
+      border: none;
+      background: #ffffff;
+      color: #000000;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(255,255,255,0.15);
+      white-space: nowrap;
+    }
+
+    .btn-pbc:hover {
+      background: #e4e4e7;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,255,255,0.25);
+    }
+
+    .btn-pbc:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Main Playlists Card Layout ─── */
+    .pl-card {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.07);
+      overflow: hidden;
+      flex: 1;
+      min-height: 0;
+      background: rgba(10,10,14,0.6);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ── Left Sidebar ─── */
+    .pl-sidebar {
+      background: rgba(255,255,255,0.018);
+      border-right: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 18px;
+      gap: 18px;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .pl-sidebar-heading {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.3);
+      padding: 0 4px;
+    }
+
+    .pl-create-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #new-playlist-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    #new-playlist-input:focus {
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.07);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    #new-playlist-input::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .btn-create-pl {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .btn-create-pl:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(255,255,255,0.08);
+    }
+
+    .pl-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .pl-list::-webkit-scrollbar { width: 3px; }
+    .pl-list::-webkit-scrollbar-track { background: transparent; }
+    .pl-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    .playlist-item {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .playlist-item:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .playlist-item.active {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .playlist-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+      background: #ffffff;
+    }
+
+    .playlist-disc-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .playlist-item.active .playlist-disc-icon {
+      background: #ffffff;
+      color: #000000;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+    }
+
+    .playlist-item .name-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 140px;
+    }
+
+    .playlist-item.active .name-label {
+      color: #fff;
+    }
+
+    .pl-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      letter-spacing: 0.04em;
+    }
+
+    .pl-badge.public {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .pl-badge.private {
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.3);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .playlist-item .chevron {
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: all 0.2s ease;
+      color: rgba(255,255,255,0.5);
+      flex-shrink: 0;
+    }
+
+    .playlist-item:hover .chevron,
+    .playlist-item.active .chevron {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── Right Content Pane ─── */
+    .pl-content {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: transparent;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Empty state with animated vinyl */
+    .pl-empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .glow-vinyl-disc {
+      position: relative;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: repeating-radial-gradient(circle at center, #1a1a1a 0px, #1a1a1a 3px, #111111 5px, #1e1e1e 7px);
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(255,255,255,0.18);
+      box-shadow:
+        0 0 30px rgba(255,255,255,0.08),
+        0 0 60px rgba(255,255,255,0.04),
+        inset 0 0 20px rgba(0,0,0,0.6);
+      animation: rotate-disc 14s linear infinite;
+      margin-bottom: 24px;
+    }
+
+    .glow-vinyl-disc::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 0%, #a1a1aa 60%, #1a1a1a 100%);
+      box-shadow: 0 0 8px rgba(255,255,255,0.4);
+    }
+
+    @keyframes rotate-disc {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Playlist Details Panel ─── */
+    .pl-details {
+      padding: 28px 32px;
+      display: none;
+      flex-direction: column;
+      gap: 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .pl-details::-webkit-scrollbar { width: 3px; }
+    .pl-details::-webkit-scrollbar-track { background: transparent; }
+    .pl-details::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    /* Playlist header */
+    .pl-header-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .pl-cover-art {
+      width: 88px; height: 88px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #111111 0%, #1c1c1c 50%, #242424 100%);
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 20px rgba(255,255,255,0.05);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pl-cover-art::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-radial-gradient(circle at center, transparent 0px, transparent 8px, rgba(255,255,255,0.03) 9px, transparent 10px);
+    }
+
+    .pl-cover-vinyl {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: repeating-radial-gradient(circle at center, #0a0a0a 0px, #0a0a0a 2px, #1a1a1a 3px, #141414 5px);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 12px rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      animation: rotate-disc 10s linear infinite;
+    }
+
+    .pl-cover-vinyl::after {
+      content: '';
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff, #a1a1aa);
+      box-shadow: 0 0 6px rgba(255,255,255,0.5);
+    }
+
+    .pl-eyebrow {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 4px;
+    }
+
+    .pl-name {
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      margin: 0 0 6px;
+    }
+
+    .pl-meta {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      font-weight: 500;
+    }
+
+    /* Share Code Row */
+    .pl-share-row {
+      display: flex;
+      gap: 14px;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .pl-code-box {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px 18px;
+    }
+
+    .pl-code-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+    }
+
+    .pl-code-val-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #playlist-code-display {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(255,255,255,0.25);
+    }
+
+    #btn-copy-code {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.8);
+      border-radius: 8px;
+      padding: 5px 14px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+
+    #btn-copy-code:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.35);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .pl-privacy-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+    }
+
+    .pl-privacy-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .pl-privacy-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #privacy-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.4);
+      transition: color 0.25s;
+    }
+
+    #toggle-privacy {
+      width: 46px; height: 26px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.28s ease;
+    }
+
+    #toggle-privacy-knob {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      position: absolute;
+      top: 2px; left: 2px;
+      transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    /* Action buttons row */
+    .pl-actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-pl-play {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      background: #ffffff;
+      color: #000000;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(255,255,255,0.15);
+    }
+
+    .btn-pl-play:hover {
+      background: #e4e4e7;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(255,255,255,0.25);
+    }
+
+    .btn-pl-play:disabled {
+      opacity: 0.5; cursor: not-allowed; transform: none;
+    }
+
+    .btn-pl-ghost {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-pl-ghost:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    .btn-pl-danger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(239,68,68,0.2);
+      background: rgba(239,68,68,0.06);
+      color: #f87171;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-pl-danger:hover {
+      border-color: rgba(239,68,68,0.4);
+      background: rgba(239,68,68,0.12);
+      color: #fca5a5;
+    }
+
+    /* Add tracks section */
+    .pl-add-section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .pl-add-heading {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .pl-add-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #playlist-add-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.2);
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    #playlist-add-input:focus {
+      border-color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.07);
+    }
+
+    #playlist-add-input::placeholder {
+      color: rgba(255,255,255,0.2);
+    }
+
+    .btn-add-song {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-add-song:hover {
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-add-current {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-add-current:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    /* Track list items */
+    .pl-tracks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .playlist-track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .playlist-track-item:hover {
+      background: rgba(255,255,255,0.05) !important;
+      border-color: rgba(255,255,255,0.12) !important;
+    }
+
+    .playlist-track-item:hover .track-remove-btn {
+      opacity: 1 !important;
+    }
+
+    .track-remove-btn {
+      opacity: 0;
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #f87171;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .track-remove-btn:hover {
+      background: rgba(239,68,68,0.2);
+      border-color: rgba(239,68,68,0.4);
+    }
+
+    /* Empty playlist state */
+    .pl-tracks-empty {
+      padding: 40px;
+      text-align: center;
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 14px;
+      color: rgba(255,255,255,0.25);
+      font-size: 14px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* Leaderboard Styles */
+    .time-filter-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-low);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-filter-btn:hover {
+      color: var(--text-hi);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .time-filter-btn.active {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text-hi) !important;
+    }
+
+    .leaderboard-item {
+      transition: all 0.25s ease;
+    }
+
+    .leaderboard-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Floating search results suggestions container */
+    .suggestions-container {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-panel-2);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      margin-top: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: var(--shadow-card);
+      display: none;
+    }
+
+    .suggestions-container.active {
+      display: block;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.2s ease;
+      text-align: left;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .suggestion-thumb {
+      width: 44px;
+      height: 33px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+    }
+
+    .suggestion-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .suggestion-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-hi);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .suggestion-author {
+      font-size: 11px;
+      color: var(--text-low);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .suggestion-duration {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-low);
+      flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      .pl-card {
+        grid-template-columns: 1fr !important;
+      }
+      .pl-sidebar {
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+      }
+    }
+
+    .mobile-navbar {
+      display: none;
+      height: 60px;
+      background: rgba(9, 9, 11, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 16px;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .sidebar-overlay.open {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (max-width: 800px) {
+      .mobile-navbar {
+        display: flex;
+      }
+
+      .shell {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 60px) !important;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        background: #09090b;
+        border-right: 1px solid var(--line);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(280px);
+      }
+
+      .np-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 24px;
+      }
+
+      .np-art {
+        margin: 0 auto;
+        width: 200px;
+        height: 200px;
+      }
+
+      .controls-row,
+      .vol-row {
+        justify-content: center;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .pl-card {
+        grid-template-columns: 1fr !important;
+      }
+
+      .pl-sidebar {
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+      }
+
+      .np-card {
+        grid-template-columns: 1fr !important;
+        text-align: center;
+        padding: 28px 20px;
+        gap: 24px;
+      }
+
+      .np-art {
+        width: 220px !important;
+        height: 220px !important;
+        margin: 0 auto;
+      }
+
+      .np-title {
+        font-size: 24px !important;
+      }
+
+      .main {
+        padding: 20px 16px !important;
+        height: 100% !important;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr !important;
+        overflow-y: auto;
+        gap: 16px !important;
+      }
+
+      .stats-card {
+        padding: 16px !important;
+        height: auto !important;
+        min-height: 380px;
+      }
+
+      .stats-track-item {
+        padding: 10px 12px !important;
+      }
+    }
+
+    #playlist-code-display {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--text-hi);
+    }
+
+    #btn-copy-code {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-mid);
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    #btn-copy-code:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: var(--text-hi);
+    }
+
+    /* Leaderboard Styles */
+    .time-filter-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-low);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-filter-btn:hover {
+      color: var(--text-hi);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .time-filter-btn.active {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text-hi) !important;
+    }
+
+    .leaderboard-item {
+      transition: all 0.25s ease;
+    }
+
+    .leaderboard-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Floating search results suggestions container */
+    .suggestions-container {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-panel-2);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      margin-top: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: var(--shadow-card);
+      display: none;
+    }
+
+    .suggestions-container.active {
+      display: block;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.2s ease;
+      text-align: left;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .suggestion-thumb {
+      width: 44px;
+      height: 33px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+    }
+    .view.active {
+      display: flex !important;
+      flex-direction: column;
+      gap: 22px;
+      animation: fadeIn 0.25s ease-out;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="petal-field" id="petals"></div>
+
+  <div class="mobile-navbar">
+    <button class="menu-toggle-btn" id="mobile-menu-toggle"
+      style="background: transparent; border: none; color: var(--text-hi); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;">
+      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none">
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+    <div
+      style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-hi);">
+      <img src="/static/Echo-avatar.png" alt="" style="width: 24px; height: 24px; border-radius: 50%;">
+      Echo
+    </div>
+    <div style="width: 32px;"></div>
+  </div>
+
+  <div class="shell">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <div class="brand"><img src="/static/Echo-avatar.png" alt=""> Echo</div>
+      <a href="/dashboard" class="back-link">← All servers</a>
+      {% if is_owner %}
+      <a href="/admin" class="back-link" style="color: #f59e0b; font-weight: 700; margin-top: -6px; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+        Admin Panel
+      </a>
+      {% endif %}
+
+      <div class="guild-tag">
+        {% if guild.icon %}
+        <img src="{{ guild.icon }}" alt="">
+        {% else %}
+        <div class="fallback">{{ guild.name[:2].upper() }}</div>
+        {% endif %}
+        <div>
+          <div class="name">{{ guild.name }}</div>
+          <div class="level">{{ permission_level|capitalize }}</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-view="home">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Home Overview
+        </button>
+        <button class="nav-btn" data-view="player">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Player
+        </button>
+        <button class="nav-btn" data-view="queue">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Queue
+        </button>
+        <button class="nav-btn" data-view="lyrics">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          Lyrics
+        </button>
+        <button class="nav-btn" data-view="playlists">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Playlists
+        </button>
+        <button class="nav-btn" data-view="leaderboard">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 8.5 22 9 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9 9 8.5 12 2"/></svg>
+          Leaderboard
+        </button>
+        <button class="nav-btn" data-view="stats">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Stats
+        </button>
+        <button class="nav-btn" data-view="settings">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <img src="{{ avatar }}" alt="">
+          <span class="name">{{ session.username }}</span>
+        </div>
+        <a href="/auth/logout" class="logout-link">Log out</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- ── Home Overview View (Full-Width Luxurious Studio Layout) ── -->
+      <section class="view active" id="view-home">
+        
+        <!-- Full-Width Server Hero Banner -->
+        <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 20px;">
+            {% if guild.icon %}
+            <img src="{{ guild.icon }}" alt="" style="width: 60px; height: 60px; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.15);">
+            {% else %}
+            <div style="width: 60px; height: 60px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800;">
+              {{ guild.name[:2].upper() }}
+            </div>
+            {% endif %}
+            <div>
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h2 style="font-size: 24px; font-weight: 800; color: var(--text-hi); margin: 0;">{{ guild.name }}</h2>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 100px;">
+                  ● ONLINE
+                </span>
+              </div>
+              <div style="font-size: 13px; color: var(--text-low); margin-top: 6px; font-weight: 500; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <span>👥 <strong style="color: #ffffff;">{{ guild.member_count or '—' }}</strong> Members</span>
+                <span>•</span>
+                <span>ID: <code style="font-family: var(--font-mono); color: #ffffff;">{{ guild.id }}</code></span>
+                <span>•</span>
+                <span>Role: <strong style="color: #ffffff;">{{ permission_level|capitalize }}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="btn btn-primary" onclick="document.querySelector('[data-view=player]').click()" style="padding: 12px 22px; font-size: 14px; font-weight: 700; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 8px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Go to Music Player
+            </button>
+            <button class="btn" onclick="document.querySelector('[data-view=settings]').click()" style="padding: 12px 18px; font-size: 14px; font-weight: 700; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">
+              ⚙ Server Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- Full-Width 4-Metric Overview Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; width: 100%;">
+          <!-- Card 1: Now Playing Track -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-low);">Now Playing</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <div id="home-np-title" style="font-size: 16px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nothing playing</div>
+            <div id="home-np-artist" style="font-size: 12px; color: var(--text-low); font-weight: 500;">Queue a song below</div>
+          </div>
+
+          <!-- Card 2: Voice Channel & 24/7 Mode -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-low);">Voice Channel</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+            </div>
+            <div id="home-vc-name" style="font-size: 16px; font-weight: 800; color: #ffffff;">Not Connected</div>
+            <div id="home-247-status" style="font-size: 12px; color: var(--text-low); font-weight: 500;">24/7 Mode: Off</div>
+          </div>
+
+          <!-- Card 3: Queue Length -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-low);">Queue Length</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </div>
+            <div id="home-queue-count" style="font-size: 24px; font-weight: 900; color: #ffffff;">0 Tracks</div>
+            <div style="font-size: 12px; color: var(--text-low); font-weight: 500;">Waiting in queue</div>
+          </div>
+
+          <!-- Card 4: Active Audio Filter & DJ Role -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-low);">Audio EQ & DJ Role</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            </div>
+            <div id="home-active-filter" style="font-size: 16px; font-weight: 800; color: #ffffff;">Normal Audio</div>
+            <div id="home-dj-role-name" style="font-size: 12px; color: var(--text-low); font-weight: 500;">DJ Role: Everyone</div>
+          </div>
+        </div>
+
+        <!-- Full-Width Quick Song Search Station -->
+        <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 16px; width: 100%;">
+          <div style="font-size: 16px; font-weight: 800; color: var(--text-hi);">Quick Song Search & Play</div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" id="home-search-input" placeholder="Enter song title or YouTube/Spotify URL..." style="flex: 1; min-width: 280px; padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(255,255,255,0.03); color: #ffffff; font-size: 14px; outline: none;">
+            <button class="btn btn-primary" id="home-search-btn" style="padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: var(--radius-sm);">Play Now</button>
+          </div>
+        </div>
+
+        <!-- Full-Width 1-Click Audio Equalizer Sound Presets -->
+        <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 16px; width: 100%;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              </div>
+              <div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-hi);">1-Click Audio Presets & Equalizer</div>
+                <div style="font-size: 12px; color: var(--text-low);">Apply instant DSP sound presets in real-time</div>
+              </div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; width: 100%;">
+            <button class="btn filter-preset-btn" data-filter="bassboost" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">🔊 Bassboost</button>
+            <button class="btn filter-preset-btn" data-filter="nightcore" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">⚡ Nightcore</button>
+            <button class="btn filter-preset-btn" data-filter="vaporwave" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">🌊 Vaporwave</button>
+            <button class="btn filter-preset-btn" data-filter="8d" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">🌀 8D Audio</button>
+            <button class="btn filter-preset-btn" data-filter="karaoke" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">🎤 Karaoke</button>
+            <button class="btn filter-preset-btn" data-filter="treble" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer;">🎼 Treble</button>
+            <button class="btn filter-preset-btn" data-filter="clear" style="padding: 10px 14px; font-size: 13px; font-weight: 700; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-sm); color: #ef4444; cursor: pointer;">❌ Reset EQ</button>
+          </div>
+        </div>
+
+        <!-- Full-Width Live Queue Stream Card -->
+        <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 16px; width: 100%;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-hi); margin: 0; display: flex; align-items: center; gap: 8px;">
+              📜 Live Queue Stream
+            </h3>
+            <button class="btn" onclick="document.querySelector('[data-view=queue]').click()" style="font-size: 12px; font-weight: 700; color: var(--text-low); padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line);">
+              Full Queue →
+            </button>
+          </div>
+
+          <div class="queue-list" id="home-queue-preview" style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="empty-queue" style="padding: 24px; font-size: 14px;">Queue is empty. Search & play a song above!</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── Music Player View (Clean & Uncluttered) ── -->
+      <section class="view" id="view-player">
+        <div id="idle-state" class="card idle-card" style="display:none;">
+          <div class="icon">🌙</div>
+          <h3>Nothing playing right now</h3>
+          <p>Queue a song below or use <code>&gt;play</code> in Discord.</p>
+        </div>
+
+        <div id="now-playing" class="card np-card" style="display:none;">
+          <div class="np-art" id="np-art">
+            <img id="np-art-img" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
+            <span id="np-art-fallback">🎵</span>
+          </div>
+          <div class="np-body">
+            <div>
+              <div class="np-title" id="np-title">—</div>
+              <div class="np-author" id="np-author">—</div>
+              <div class="np-requester" id="np-requester"></div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-bar" id="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+              </div>
+              <div class="time-row"><span id="time-current">0:00</span><span id="time-total">0:00</span></div>
+            </div>
+            <div class="controls-row">
+              <button class="btn btn-icon" id="btn-shuffle" title="Shuffle">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 3 21 3 21 8" />
+                  <line x1="4" y1="20" x2="21" y2="3" />
+                  <polyline points="21 16 21 21 16 21" />
+                  <line x1="15" y1="15" x2="21" y2="21" />
+                  <line x1="4" y1="4" x2="9" y2="9" />
+                </svg>
+              </button>
+              <button class="btn btn-icon" id="btn-previous" title="Previous">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <polygon points="19 20 9 12 19 4 19 20" />
+                  <line x1="5" y1="5" x2="5" y2="19" stroke="currentColor" stroke-width="3" />
+                </svg>
+              </button>
+              <button class="btn btn-icon lg" id="btn-toggle" title="Play/Pause">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+              </button>
+              <button class="btn btn-icon" id="btn-skip" title="Skip">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <polygon points="5 4 15 12 5 20 5 4" />
+                  <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="3" />
+                </svg>
+              </button>
+              <button class="btn btn-icon" id="btn-replay" title="Replay">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <polygon points="12 4 2 12 12 20 12 4" />
+                  <polygon points="22 4 12 12 22 20 22 4" />
+                </svg>
+              </button>
+              <button class="btn btn-icon" id="btn-loop" title="Loop">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="17 1 21 5 17 9" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <polyline points="7 23 3 19 7 15" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+              </button>
+              <button class="btn btn-icon" id="btn-autoplay" title="Autoplay">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                  <path
+                    d="M12 12c-2-2.67-4-4-6-4A4 4 0 1 0 6 16c2 0 4-1.33 6-4zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4z" />
+                </svg>
+              </button>
+              <button class="btn btn-icon btn-danger" id="btn-stop" title="Stop">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <rect x="4" y="4" width="16" height="16" />
+                </svg>
+              </button>
+            </div>
+            <div class="vol-row">
+              <span style="font-size:12px;">🔊</span>
+              <input type="range" id="vol-slider" min="0" max="150" value="100">
+              <span class="vlabel" id="vol-label">100%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio Equalizer & DSP Filters Card -->
+        <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.2); display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              </div>
+              <div>
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-hi);">Audio Equalizer & DSP Filters</div>
+                <div style="font-size: 12px; color: var(--text-low);">Apply 1-click sound presets in real-time</div>
+              </div>
+            </div>
+            <span id="active-filter-badge" class="badge" style="background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 20px;">
+              Normal Audio
+            </span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px;">
+            <button class="btn filter-preset-btn" data-filter="bassboost" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              Bassboost
+            </button>
+            <button class="btn filter-preset-btn" data-filter="nightcore" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Nightcore
+            </button>
+            <button class="btn filter-preset-btn" data-filter="vaporwave" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>
+              Vaporwave
+            </button>
+            <button class="btn filter-preset-btn" data-filter="8d" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              8D Audio
+            </button>
+            <button class="btn filter-preset-btn" data-filter="karaoke" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              Karaoke
+            </button>
+            <button class="btn filter-preset-btn" data-filter="treble" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text-hi); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 18V5l12-2v13M9 9l12-2"/></svg>
+              Treble Boost
+            </button>
+            <button class="btn filter-preset-btn" data-filter="clear" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); color: #ef4444; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div class="search-row">
+          <div style="flex: 1; position: relative;">
+            <input type="text" id="search-input" placeholder="Search a song or paste a link…" style="width: 100%;">
+            <div id="main-search-suggestions" class="suggestions-container"></div>
+          </div>
+          <button class="btn btn-primary" id="search-btn">Play</button>
+        </div>
+
+        <div class="section-head">
+          <h2>Up next</h2><span class="badge" id="queue-count-badge">0 in queue</span>
+        </div>
+        <div class="queue-list" id="queue-preview">
+          <div class="empty-queue">Queue is empty.</div>
+        </div>
+      </section>
+
+      <!-- queue view -->
+      <section class="view" id="view-queue">
+        <div class="section-head">
+          <h2>Full queue</h2>
+        </div>
+        <div class="queue-list" id="queue-full">
+          <div class="empty-queue">Queue is empty.</div>
+        </div>
+      </section>
+
+      <!-- settings view -->
+      <section class="view" id="view-settings" style="gap: 24px;">
+        <div class="section-head" style="margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2 style="font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-hi); letter-spacing: -0.02em; margin: 0;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </div>
+              Server Settings
+            </h2>
+            <p style="font-size: 13px; color: var(--text-low); margin: 6px 0 0 0; font-weight: 500;">
+              Manage prefix, 24/7 playback, volume defaults, DJ roles, and channel bounds.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" id="btn-save-guild-settings" style="padding: 10px 20px; font-size: 13px; font-weight: 700; height: 42px;">
+            Save Settings
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;">
+          
+          <!-- Card 1: General Settings -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 14px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-hi); margin: 0;">General Configuration</h3>
+            </div>
+
+            <!-- Prefix -->
+            <div class="settings-row">
+              <div>
+                <div class="label">Command Prefix</div>
+                <div class="desc">Text trigger (e.g. <code>&gt;play</code>)</div>
+              </div>
+              <input type="text" class="prefix-input" id="cfg-prefix" maxlength="5" value=">">
+            </div>
+
+            <!-- Announce Now Playing -->
+            <div class="settings-row" style="border-top: 1px solid var(--line); padding-top: 16px;">
+              <div>
+                <div class="label">Announce Now Playing</div>
+                <div class="desc">Send info card when songs start</div>
+              </div>
+              <div class="toggle active" id="cfg-announce-toggle"></div>
+            </div>
+          </div>
+
+          <!-- Card 2: Audio Defaults & 24/7 -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 14px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#10b981" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-hi); margin: 0;">Audio Defaults & 24/7</h3>
+            </div>
+
+            <!-- Default Volume -->
+            <div class="settings-row">
+              <div>
+                <div class="label">Default Volume</div>
+                <div class="desc">Initial playback volume (0% - 150%)</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="range" id="cfg-default-vol" min="0" max="150" value="100" style="width: 100px;">
+                <span id="cfg-vol-val" style="font-weight: 700; font-size: 13px; color: var(--text-hi); min-width: 36px;">100%</span>
+              </div>
+            </div>
+
+            <!-- 24/7 Toggle -->
+            <div class="settings-row" style="border-top: 1px solid var(--line); padding-top: 16px;">
+              <div>
+                <div class="label">24/7 Mode</div>
+                <div class="desc">Stay connected even when queue is empty</div>
+              </div>
+              <div class="toggle" id="toggle-247"></div>
+            </div>
+
+            <!-- 24/7 Channel -->
+            <div class="settings-row" id="settings-247-channel-row" style="border-top: 1px solid var(--line); padding-top: 16px; display: none;">
+              <div>
+                <div class="label">24/7 Voice Channel</div>
+                <div class="desc">Voice channel auto-reconnect target</div>
+              </div>
+              <select class="settings-select" id="settings-247-channel" style="width: 180px; padding: 8px 12px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); color: var(--text-hi); font-size: 13px; outline: none;">
+                <option value="">-- Select Channel --</option>
+                {% if vc_channels %}
+                {% for c in vc_channels %}
+                <option value="{{ c.id }}" {% if guild_settings and guild_settings.twentyfourseven_channel_id|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Card 3: DJ & Role Control -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 14px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v3a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1"/></svg>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-hi); margin: 0;">DJ Role & Permissions</h3>
+            </div>
+
+            <!-- DJ Role -->
+            <div class="settings-row">
+              <div>
+                <div class="label">DJ Role Requirement</div>
+                <div class="desc">Role required to skip, stop, or change audio filters</div>
+              </div>
+              <select class="settings-select" id="cfg-dj-role" style="width: 190px; padding: 8px 12px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); color: var(--text-hi); font-size: 13px; outline: none;">
+                <option value="">-- None (Everyone) --</option>
+                {% if roles %}
+                {% for r in roles %}
+                <option value="{{ r.id }}" {% if guild_settings and guild_settings.dj_role_id|string == r.id|string %}selected{% endif %}>{{ r.name }}</option>
+                {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Card 4: Channel Restrictions -->
+          <div class="card" style="background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 14px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-hi); margin: 0;">Channel Restrictions</h3>
+            </div>
+
+            <!-- Restricted Voice Channel -->
+            <div class="settings-row">
+              <div>
+                <div class="label">Voice Channel Restriction</div>
+                <div class="desc">Limit music playback channel</div>
+              </div>
+              <select class="settings-select" id="cfg-restricted-vc" style="width: 190px; padding: 8px 12px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); color: var(--text-hi); font-size: 13px; outline: none;">
+                <option value="">-- Allow All VC --</option>
+                {% if vc_channels %}
+                {% for c in vc_channels %}
+                <option value="{{ c.id }}" {% if guild_settings and guild_settings.restricted_vc_id|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+
+            <!-- Restricted Text Channel -->
+            <div class="settings-row" style="border-top: 1px solid var(--line); padding-top: 16px;">
+              <div>
+                <div class="label">Text Channel Restriction</div>
+                <div class="desc">Limit bot text command channel</div>
+              </div>
+              <select class="settings-select" id="cfg-restricted-tc" style="width: 190px; padding: 8px 12px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); color: var(--text-hi); font-size: 13px; outline: none;">
+                <option value="">-- Allow All TC --</option>
+                {% if tc_channels %}
+                {% for c in tc_channels %}
+                <option value="{{ c.id }}" {% if guild_settings and guild_settings.restricted_tc_id|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        {% if permission_level == 'member' %}
+        <div class="locked-note">🔒 You need the Manage Server permission to change these.</div>
+        {% endif %}
+      </section>
+
+      <!-- playlists view -->
+      <section class="view" id="view-playlists">
+
+        <!-- ✨ Premium Play By Code Banner -->
+        <div class="pbc-banner">
+          <div class="pbc-icon-box">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="#a78bfa" stroke-width="2.5" fill="none">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <div class="pbc-label">Play by Code</div>
+            <div class="pbc-desc">Enter a playlist code shared by someone to play their <strong>public playlist</strong> in your voice channel.</div>
+          </div>
+          <div class="pbc-input-wrap">
+            <input type="text" id="play-by-code-input" placeholder="AB3X9KZ2" maxlength="8">
+            <button class="btn-pbc" id="btn-play-by-code">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Play
+            </button>
+          </div>
+        </div>
+
+        <!-- ✨ Premium Split-Pane Playlists Card -->
+        <div class="pl-card">
+
+          <!-- Left Sidebar -->
+          <div class="pl-sidebar">
+            <div class="pl-sidebar-heading">Your Playlists</div>
+
+            <div class="pl-create-wrap">
+              <input type="text" id="new-playlist-input" placeholder="Enter playlist name...">
+              <button class="btn-create-pl" id="btn-create-playlist">
+                <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Create Playlist
+              </button>
+            </div>
+
+            <div id="playlists-list" class="pl-list">
+              <div class="pl-tracks-empty" style="padding: 20px 10px; font-size: 13px;">No playlists yet.</div>
+            </div>
+          </div>
+
+          <!-- Right Content Pane -->
+          <div class="pl-content">
+
+            <!-- Empty state -->
+            <div id="playlist-empty-panel" class="pl-empty-state">
+              <div class="glow-vinyl-disc"></div>
+              <h3 style="font-size: 20px; font-weight: 800; color: rgba(255,255,255,0.8); margin-bottom: 10px; letter-spacing: -0.02em;">Select a Playlist</h3>
+              <p style="font-size: 13px; color: rgba(255,255,255,0.3); max-width: 300px; line-height: 1.6; margin: 0;">Choose a playlist from the left panel to view tracks, manage, or play in your voice channel.</p>
+            </div>
+
+            <!-- Playlist Details Panel -->
+            <div id="playlist-details-panel" class="pl-details">
+
+              <!-- Header -->
+              <div class="pl-header-row">
+                <div class="pl-cover-art">
+                  <div class="pl-cover-vinyl"></div>
+                </div>
+                <div style="flex: 1; text-align: left;">
+                  <div class="pl-eyebrow">Playlist</div>
+                  <h3 id="selected-playlist-name" class="pl-name">Playlist Name</h3>
+                  <span id="selected-playlist-meta" class="pl-meta">0 tracks</span>
+                </div>
+              </div>
+
+              <!-- Share Code + Privacy -->
+              <div class="pl-share-row">
+                <div class="pl-code-box">
+                  <div class="pl-code-label">Share Code</div>
+                  <div class="pl-code-val-row">
+                    <span id="playlist-code-display">--------</span>
+                    <button id="btn-copy-code" title="Copy code">Copy</button>
+                  </div>
+                </div>
+                <div class="pl-privacy-box">
+                  <div class="pl-privacy-label">Visibility</div>
+                  <div class="pl-privacy-toggle-row">
+                    <span id="privacy-label">Private</span>
+                    <div id="toggle-privacy" title="Toggle public/private">
+                      <div id="toggle-privacy-knob"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="pl-actions-row">
+                <button class="btn-pl-play" id="btn-play-playlist">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Play in VC
+                </button>
+                <button class="btn-pl-ghost" id="btn-rename-playlist">
+                  <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Rename
+                </button>
+                <button class="btn-pl-danger" id="btn-delete-playlist">
+                  <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                  Delete
+                </button>
+              </div>
+
+              <!-- Add Tracks Section -->
+              <div class="pl-add-section">
+                <div class="pl-add-heading">
+                  <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  Add Tracks
+                </div>
+                <div class="pl-add-row">
+                  <div style="flex: 1; position: relative; min-width: 200px;">
+                    <input type="text" id="playlist-add-input" placeholder="Search a song title or paste YouTube link...">
+                    <div id="playlist-add-suggestions" class="suggestions-container"></div>
+                  </div>
+                  <div style="display: flex; gap: 6px;">
+                    <button class="btn-add-song" id="btn-add-search">Add Song</button>
+                    <button class="btn-add-current" id="btn-add-current" title="Add current song">Add Current</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tracks List -->
+              <div id="playlist-tracks-list" class="pl-tracks-list">
+                <!-- Dynamically loaded -->
+              </div>
+
+            </div><!-- /pl-details -->
+          </div><!-- /pl-content -->
+        </div><!-- /pl-card -->
+
+      </section>
+
+      <!-- leaderboard view -->
+      <section class="view" id="view-leaderboard">
+        <div class="section-head"
+          style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2
+              style="font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-hi); letter-spacing: -0.02em; margin: 0;">
+              <span style="font-size: 28px;">🏆</span> Public Playlist Leaderboard
+            </h2>
+            <p style="font-size: 13px; color: var(--text-low); margin: 6px 0 0 0; font-weight: 500;">Discover and play
+              the most popular public playlists on Echo.</p>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <!-- Search bar -->
+            <div style="position: relative;">
+              <input type="text" id="leaderboard-search" placeholder="Search playlists..." style="width: 220px; padding: 8px 14px 8px 34px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--text-hi); font-size: 13px; outline: none; transition: all 0.2s;">
+              <svg viewBox="0 0 24 24" width="13" height="13" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" fill="none" style="position: absolute; left: 12px; top: 11px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+
+            <div
+              style="display: flex; background: rgba(255,255,255,0.03); border: 1px solid var(--line); padding: 4px; border-radius: var(--radius-sm); gap: 4px;">
+              <button class="time-filter-btn" data-timeframe="day"
+                onclick="changeLeaderboardTimeframe('day')">Day</button>
+              <button class="time-filter-btn" data-timeframe="week"
+                onclick="changeLeaderboardTimeframe('week')">Week</button>
+              <button class="time-filter-btn" data-timeframe="month"
+                onclick="changeLeaderboardTimeframe('month')">Month</button>
+              <button class="time-filter-btn active" data-timeframe="all" onclick="changeLeaderboardTimeframe('all')">All
+                Time</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="leaderboard-container" style="display: flex; flex-direction: column; gap: 14px; min-height: 200px;">
+          <!-- Dynamically loaded -->
+        </div>
+      </section>
+
+      <!-- lyrics view -->
+      <section class="view" id="view-lyrics" style="gap: 20px;">
+        <div class="section-head" style="margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2 style="font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-hi); letter-spacing: -0.02em; margin: 0;">
+              <span style="font-size: 28px;">🎤</span> Lyrics Finder
+            </h2>
+            <p style="font-size: 13px; color: var(--text-low); margin: 6px 0 0 0; font-weight: 500;">View lyrics of currently playing song or search manually.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="lyrics-search-input" placeholder="Search song lyrics manually..." style="width: 220px; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--text-hi); font-size: 13px; outline: none;">
+            <button class="btn btn-primary" id="lyrics-search-btn" style="padding: 8px 16px; font-size: 13px; border-radius: var(--radius-sm); font-weight: 600;">Search</button>
+          </div>
+        </div>
+        
+        <div class="card" style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 20px; background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; overflow: hidden; position: relative;">
+          <!-- Lyrics Title & Meta -->
+          <div style="border-bottom: 1px solid var(--line); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; text-align: left;">
+            <div>
+              <h3 id="lyrics-track-title" style="font-size: 18px; font-weight: 800; color: var(--text-hi); margin: 0;">Track Name</h3>
+              <span id="lyrics-track-artist" style="font-size: 12px; color: var(--text-low); font-weight: 500; margin-top: 4px; display: block;">Artist Name</span>
+            </div>
+            <button class="btn" id="lyrics-sync-btn" style="padding: 8px 14px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.03); border: 1px solid var(--line); display: flex; align-items: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="transform: scaleX(-1);"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Sync Current Song
+            </button>
+          </div>
+
+          <!-- Lyrics Content Scrollable -->
+          <div id="lyrics-text-container" style="flex: 1; overflow-y: auto; font-family: var(--font-body); font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.85); font-weight: 500; text-align: center; white-space: pre-line; padding: 20px 10px; max-height: 100%;">
+            Lyrics will show up here when you play a song.
+          </div>
+        </div>
+      </section>
+
+      <!-- stats view -->
+      <section class="view" id="view-stats" style="gap: 24px;">
+        <div class="section-head" style="margin-bottom: 0;">
+          <div>
+            <h2 style="font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-hi); letter-spacing: -0.02em; margin: 0;">
+              <span style="font-size: 28px;">📊</span> Server Music Stats
+            </h2>
+            <p style="font-size: 13px; color: var(--text-low); margin: 6px 0 0 0; font-weight: 500;">
+              Most popular tracks and play history in this server.
+            </p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <!-- Left side: Top Played -->
+          <div class="card stats-card">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-hi); margin: 0 0 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <span>🔥</span> Top Played Songs
+            </h3>
+            <div id="stats-top-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+          <!-- Right side: Recently Played -->
+          <div class="card stats-card">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-hi); margin: 0 0 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <span>🕒</span> Recently Played
+            </h3>
+            <div id="stats-recent-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Leaderboard Playlist Details Modal -->
+  <div id="leaderboard-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+    <div class="modal-content card" style="width: 90%; max-width: 550px; background: #111113; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); transform: translateY(-20px); transition: transform 0.25s ease; max-height: 80vh;">
+      
+      <!-- Modal Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 16px;">
+        <div style="text-align: left;">
+          <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.4);">Leaderboard Playlist</span>
+          <h3 id="lb-modal-title" style="font-size: 20px; font-weight: 800; color: #fff; margin: 4px 0 2px;">Playlist Name</h3>
+          <span id="lb-modal-meta" style="font-size: 12px; color: rgba(255, 255, 255, 0.35);">by username</span>
+        </div>
+        <button id="lb-modal-close" style="background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255, 255, 255, 0.4)'">✕</button>
+      </div>
+
+      <!-- Tracks Container -->
+      <div id="lb-modal-tracks" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; min-height: 200px;">
+        <!-- Tracks loaded dynamically -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="display: flex; gap: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px;">
+        <button class="btn btn-primary" id="lb-modal-play-btn" style="flex: 1; justify-content: center; height: 42px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play Playlist
+        </button>
+        <button class="btn" id="lb-modal-copy-btn" style="height: 42px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff;">Copy Code</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast-root"></div>
+
+  <script>
+    const GUILD_ID = "{{ guild.id }}";
+    const CAN_EDIT_SETTINGS = {{ 'true' if permission_level in ('owner', 'manager') else 'false' }};
+    let currentState = null;
+    let ws = null;
+    let localPositionTimer = null;
+
+    // ── Toasts ─────────────────────────────────────────────────
+    const _toastActive = new Set();
+    function toast(msg, type = '') {
+      // Deduplicate: ignore same message if already showing
+      const key = type + '|' + msg;
+      if (_toastActive.has(key)) return;
+      _toastActive.add(key);
+      const root = document.getElementById('toast-root');
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<span>${msg}</span>`;
+      root.appendChild(el);
+      setTimeout(() => { el.remove(); _toastActive.delete(key); }, 3500);
+    }
+
+    // ── Nav switching ──────────────────────────────────────────
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('view-' + btn.dataset.view).classList.add('active');
+        if (btn.dataset.view === 'leaderboard' && typeof loadLeaderboard === 'function') {
+          loadLeaderboard('all');
+        }
+        if (btn.dataset.view === 'lyrics' && typeof loadLyrics === 'function') {
+          loadLyrics();
+        }
+        if (btn.dataset.view === 'stats' && typeof loadStats === 'function') {
+          loadStats();
+        }
+        if (btn.dataset.view === 'playlists' && typeof loadPlaylists === 'function') {
+          loadPlaylists();
+        }
+        if (btn.dataset.view === 'settings' && typeof loadGuildSettings === 'function') {
+          loadGuildSettings();
+        }
+      });
+    });
+
+    // ── Equalizer & DSP Filter handlers ────────────────────────
+    document.querySelectorAll('.filter-preset-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const filterName = btn.dataset.filter;
+        try {
+          const res = await api('POST', `/api/guilds/${GUILD_ID}/filter`, { filter: filterName });
+          toast(res.message || 'Filter applied', 'success');
+          updateFilterBadge(res.active_filter);
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      });
+    });
+
+    function updateFilterBadge(filterName) {
+      const badge = document.getElementById('active-filter-badge');
+      if (!badge) return;
+      if (!filterName || filterName === 'clear') {
+        badge.textContent = 'Normal Audio';
+        badge.style.color = '#a78bfa';
+        badge.style.background = 'rgba(167, 139, 250, 0.15)';
+      } else {
+        badge.textContent = filterName.toUpperCase() + ' ACTIVE';
+        badge.style.color = '#10b981';
+        badge.style.background = 'rgba(16, 185, 129, 0.15)';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ── Guild Settings Loader & Saver ─────────────────────────
+    async function loadGuildSettings() {
+      try {
+        const data = await api('GET', `/api/guilds/${GUILD_ID}/settings`);
+        if (!data || !data.ok) return;
+
+        const s = data.settings || {};
+        if (document.getElementById('cfg-prefix')) document.getElementById('cfg-prefix').value = s.prefix || '>';
+        if (document.getElementById('cfg-default-vol')) {
+          document.getElementById('cfg-default-vol').value = s.default_volume || 100;
+          document.getElementById('cfg-vol-val').textContent = (s.default_volume || 100) + '%';
+        }
+        
+        const announceTgl = document.getElementById('cfg-announce-toggle');
+        if (announceTgl) {
+          announceTgl.classList.remove('on');
+          if (s.announce_now_playing) {
+            announceTgl.classList.add('active');
+          } else {
+            announceTgl.classList.remove('active');
+          }
+        }
+
+        const tgl247 = document.getElementById('toggle-247');
+        const row247 = document.getElementById('settings-247-channel-row');
+        if (tgl247) {
+          tgl247.classList.remove('on');
+          if (s.twentyfourseven) {
+            tgl247.classList.add('active');
+            if (row247) row247.style.display = 'flex';
+          } else {
+            tgl247.classList.remove('active');
+            if (row247) row247.style.display = 'none';
+          }
+        }
+
+        const setSelectVal = (selectEl, val) => {
+          if (!selectEl) return;
+          const valStr = val ? String(val) : '';
+          const exists = Array.from(selectEl.options).some(o => o.value === valStr);
+          selectEl.value = exists ? valStr : '';
+        };
+
+        // Roles dropdown
+        const djSel = document.getElementById('cfg-dj-role');
+        if (djSel && data.roles) {
+          djSel.innerHTML = '<option value="">-- None (Everyone) --</option>' +
+            data.roles.map(r => `<option value="${r.id}" ${String(s.dj_role_id) === String(r.id) ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('');
+          setSelectVal(djSel, s.dj_role_id);
+        }
+
+        // VC dropdowns
+        const vc247Sel = document.getElementById('settings-247-channel');
+        const rVcSel = document.getElementById('cfg-restricted-vc');
+
+        if (vc247Sel && data.vc_channels) {
+          vc247Sel.innerHTML = '<option value="">-- Select Voice Channel --</option>' +
+            data.vc_channels.map(c => `<option value="${c.id}" ${String(s.twentyfourseven_channel_id) === String(c.id) ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+          setSelectVal(vc247Sel, s.twentyfourseven_channel_id);
+        }
+
+        if (rVcSel && data.vc_channels) {
+          rVcSel.innerHTML = '<option value="">-- Allow All Voice Channels --</option>' +
+            data.vc_channels.map(c => `<option value="${c.id}" ${String(s.restricted_vc_id) === String(c.id) ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+          setSelectVal(rVcSel, s.restricted_vc_id);
+        }
+
+        // TC dropdown
+        const rTcSel = document.getElementById('cfg-restricted-tc');
+        if (rTcSel && data.tc_channels) {
+          rTcSel.innerHTML = '<option value="">-- Allow All Text Channels --</option>' +
+            data.tc_channels.map(c => `<option value="${c.id}" ${String(s.restricted_tc_id) === String(c.id) ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+          setSelectVal(rTcSel, s.restricted_tc_id);
+        }
+
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    }
+
+    // Default volume slider sync
+    const defVolSlider = document.getElementById('cfg-default-vol');
+    if (defVolSlider) {
+      defVolSlider.addEventListener('input', (e) => {
+        document.getElementById('cfg-vol-val').textContent = e.target.value + '%';
+      });
+    }
+
+    // 24/7 toggle click
+    const tgl247El = document.getElementById('toggle-247');
+    if (tgl247El) {
+      tgl247El.addEventListener('click', () => {
+        if (!CAN_EDIT_SETTINGS) return;
+        tgl247El.classList.remove('on');
+        tgl247El.classList.toggle('active');
+        const row247 = document.getElementById('settings-247-channel-row');
+        if (row247) {
+          row247.style.display = tgl247El.classList.contains('active') ? 'flex' : 'none';
+        }
+      });
+    }
+
+    // Announce toggle click
+    const annTgl = document.getElementById('cfg-announce-toggle');
+    if (annTgl) {
+      annTgl.addEventListener('click', () => {
+        if (!CAN_EDIT_SETTINGS) return;
+        annTgl.classList.remove('on');
+        annTgl.classList.toggle('active');
+      });
+    }
+
+    // Save Settings click
+    const saveBtn = document.getElementById('btn-save-guild-settings');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        if (!CAN_EDIT_SETTINGS) {
+          toast('You need Manage Server permissions to edit settings.', 'error');
+          return;
+        }
+
+        const is247On = document.getElementById('toggle-247').classList.contains('active');
+        const isAnnOn = document.getElementById('cfg-announce-toggle').classList.contains('active');
+
+        const payload = {
+          prefix: document.getElementById('cfg-prefix')?.value?.trim() || '>',
+          twentyfourseven: is247On,
+          twentyfourseven_channel_id: document.getElementById('settings-247-channel')?.value || null,
+          default_volume: parseInt(document.getElementById('cfg-default-vol')?.value) || 100,
+          announce_now_playing: isAnnOn,
+          dj_role_id: document.getElementById('cfg-dj-role')?.value || null,
+          restricted_vc_id: document.getElementById('cfg-restricted-vc')?.value || null,
+          restricted_tc_id: document.getElementById('cfg-restricted-tc')?.value || null
+        };
+
+        try {
+          const res = await api('POST', `/api/guilds/${GUILD_ID}/settings`, payload);
+          toast(res.message || 'Settings saved successfully!', 'success');
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      });
+    }
+
+    // ── API helper ─────────────────────────────────────────────
+    async function api(method, path, body) {
+      const res = await fetch(path, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'Something went wrong' }));
+        throw new Error(err.detail || 'Request failed');
+      }
+      return res.json();
+    }
+
+    function fmtTime(ms) {
+      if (!ms || ms < 0) return '0:00';
+      const s = Math.floor(ms / 1000);
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      return h ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function renderQueueItem(track, idx) {
+      return `
+        <div class="queue-item">
+          <span class="queue-index">${idx + 1}</span>
+          <div class="queue-info">
+            <div class="t">${track.title}</div>
+            <div class="a">${track.author}</div>
+          </div>
+          <span class="queue-dur">${fmtTime(track.duration)}</span>
+          <button class="btn btn-icon queue-remove" style="width:32px;height:32px;" onclick="removeFromQueue(${idx})" title="Remove">✕</button>
+        </div>`;
+    }
+
+    function render(state) {
+      currentState = state;
+      const idle = document.getElementById('idle-state');
+      const np = document.getElementById('now-playing');
+
+      if (typeof updateFilterBadge === 'function') {
+        updateFilterBadge(state.active_filter);
+      }
+
+      if (!state.connected || !state.current) {
+        idle.style.display = 'block';
+        np.style.display = 'none';
+      } else {
+        idle.style.display = 'none';
+        np.style.display = 'grid';
+
+        document.getElementById('np-title').textContent = state.current.title;
+        document.getElementById('np-author').textContent = state.current.author;
+        document.getElementById('np-requester').textContent = '';
+
+        document.getElementById('time-total').textContent = fmtTime(state.current.duration);
+        document.getElementById('time-current').textContent = fmtTime(state.position);
+        const pct = state.current.duration ? Math.min(100, (state.position / state.current.duration) * 100) : 0;
+        document.getElementById('progress-fill').style.width = pct + '%';
+
+        // Auto sync lyrics highlight
+        if (typeof updateLyricsHighlight === 'function') {
+          updateLyricsHighlight(state.position);
+        }
+
+        // Auto load lyrics if track changed and user is on lyrics tab
+        if (!window.currentPlayingUri || window.currentPlayingUri !== state.current.uri) {
+          window.currentPlayingUri = state.current.uri;
+          const activeTab = document.querySelector('.nav-btn.active');
+          if (activeTab && activeTab.dataset.view === 'lyrics' && typeof loadLyrics === 'function') {
+            loadLyrics();
+          }
+        }
+
+        // Thumbnail: show the resolved artwork if we have one, otherwise
+        // fall back to the music-note glyph. Handles missing/broken
+        // thumbnails gracefully rather than leaving a blank box.
+        const artImg = document.getElementById('np-art-img');
+        const artFallback = document.getElementById('np-art-fallback');
+        if (state.current.thumbnail) {
+          if (artImg.dataset.src !== state.current.thumbnail) {
+            artImg.dataset.src = state.current.thumbnail;
+            artImg.src = state.current.thumbnail;
+          }
+          artImg.style.display = 'block';
+          artFallback.style.display = 'none';
+          artImg.onerror = () => {
+            artImg.style.display = 'none';
+            artFallback.style.display = 'block';
+          };
+        } else {
+          artImg.style.display = 'none';
+          artImg.removeAttribute('src');
+          artImg.dataset.src = '';
+          artFallback.style.display = 'block';
+        }
+
+        // Update Home Overview metrics dynamically
+        const homeNpTitle = document.getElementById('home-np-title');
+        const homeNpArtist = document.getElementById('home-np-artist');
+        if (homeNpTitle && homeNpArtist) {
+          if (state.connected && state.current) {
+            homeNpTitle.textContent = state.current.title;
+            homeNpArtist.textContent = state.current.author || 'Unknown Artist';
+          } else {
+            homeNpTitle.textContent = 'Nothing playing';
+            homeNpArtist.textContent = 'Queue a song below';
+          }
+        }
+
+        const homeVcName = document.getElementById('home-vc-name');
+        if (homeVcName) {
+          homeVcName.textContent = state.channel_name ? (state.channel_name) : 'Not Connected';
+        }
+
+        const home247Status = document.getElementById('home-247-status');
+        if (home247Status) {
+          home247Status.textContent = state.is_247 ? '24/7 Mode: Enabled' : '24/7 Mode: Disabled';
+        }
+
+        const homeQueueCount = document.getElementById('home-queue-count');
+        if (homeQueueCount) {
+          homeQueueCount.textContent = (state.queue ? state.queue.length : 0) + ' Tracks';
+        }
+
+        const homeActiveFilter = document.getElementById('home-active-filter');
+        if (homeActiveFilter) {
+          homeActiveFilter.textContent = state.active_filter ? state.active_filter.toUpperCase() : 'Normal Audio';
+        }
+
+        const homeQueuePrev = document.getElementById('home-queue-preview');
+        if (homeQueuePrev) {
+          if (!state.queue || state.queue.length === 0) {
+            homeQueuePrev.innerHTML = '<div class="empty-queue" style="padding:24px;">Queue is empty. Add a song above!</div>';
+          } else {
+            homeQueuePrev.innerHTML = state.queue.slice(0, 4).map((tr, i) => renderQueueItem(tr, i)).join('');
+          }
+        }
+
+        document.getElementById('btn-toggle').innerHTML = state.paused
+          ? `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>`
+          : `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+        document.getElementById('btn-loop').style.opacity = state.loop ? '1' : '0.5';
+        document.getElementById('btn-autoplay').style.opacity = state.autoplay ? '1' : '0.5';
+        document.getElementById('vol-slider').value = state.volume;
+        document.getElementById('vol-label').textContent = state.volume + '%';
+      }
+
+      const count = state.queue_length || 0;
+      document.getElementById('queue-count-badge').textContent = `${count} in queue`;
+
+      const previewHtml = state.queue && state.queue.length
+        ? state.queue.slice(0, 5).map((t, i) => renderQueueItem(t, i)).join('')
+        : '<div class="empty-queue">Queue is empty. Add a song below!</div>';
+      document.getElementById('queue-preview').innerHTML = previewHtml;
+
+      const fullHtml = state.queue && state.queue.length
+        ? state.queue.map((t, i) => renderQueueItem(t, i)).join('')
+        : '<div class="empty-queue">Queue is empty.</div>';
+      document.getElementById('queue-full').innerHTML = fullHtml;
+    }
+
+    async function removeFromQueue(index) {
+      try {
+        await api('POST', `/api/guilds/${GUILD_ID}/queue/${index}/remove`);
+        toast('Removed from queue', 'success');
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    window.removeFromQueue = removeFromQueue;
+
+    // ── Controls ───────────────────────────────────────────────
+    document.getElementById('btn-toggle').addEventListener('click', async () => {
+      if (!currentState) return;
+      try {
+        await api('POST', `/api/guilds/${GUILD_ID}/${currentState.paused ? 'resume' : 'pause'}`);
+      } catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-skip').addEventListener('click', async () => {
+      try { await api('POST', `/api/guilds/${GUILD_ID}/skip`); toast('Skipped', 'success'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-stop').addEventListener('click', async () => {
+      try { await api('POST', `/api/guilds/${GUILD_ID}/stop`); toast('Stopped', 'success'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-loop').addEventListener('click', async () => {
+      if (!currentState) return;
+      try { await api('POST', `/api/guilds/${GUILD_ID}/loop`, { loop: !currentState.loop }); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-shuffle').addEventListener('click', async () => {
+      try { await api('POST', `/api/guilds/${GUILD_ID}/shuffle`); toast('Queue shuffled', 'success'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-previous').addEventListener('click', async () => {
+      try { await api('POST', `/api/guilds/${GUILD_ID}/previous`); toast('Playing previous track', 'success'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-replay').addEventListener('click', async () => {
+      try { await api('POST', `/api/guilds/${GUILD_ID}/replay`); toast('Replaying track', 'success'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    document.getElementById('btn-autoplay').addEventListener('click', async () => {
+      if (!currentState) return;
+      try { await api('POST', `/api/guilds/${GUILD_ID}/autoplay`, { autoplay: !currentState.autoplay }); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    let volDebounce;
+    document.getElementById('vol-slider').addEventListener('input', (e) => {
+      document.getElementById('vol-label').textContent = e.target.value + '%';
+      clearTimeout(volDebounce);
+      volDebounce = setTimeout(async () => {
+        try { await api('POST', `/api/guilds/${GUILD_ID}/volume`, { volume: parseInt(e.target.value) }); }
+        catch (e) { toast(e.message, 'error'); }
+      }, 250);
+    });
+
+    document.getElementById('search-btn').addEventListener('click', () => doSearch('search-input', 'search-btn'));
+    document.getElementById('search-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch('search-input', 'search-btn'); });
+    if (document.getElementById('home-search-btn')) {
+      document.getElementById('home-search-btn').addEventListener('click', () => doSearch('home-search-input', 'home-search-btn'));
+    }
+    if (document.getElementById('home-search-input')) {
+      document.getElementById('home-search-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch('home-search-input', 'home-search-btn'); });
+    }
+
+    async function doSearch(inputId = 'search-input', btnId = 'search-btn') {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const query = input.value.trim();
+      if (!query) return;
+      const btn = document.getElementById(btnId);
+      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+      try {
+        const result = await api('POST', `/api/guilds/${GUILD_ID}/play`, { query });
+        toast(result.message, 'success');
+        input.value = '';
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = btnId === 'home-search-btn' ? 'Play Now' : 'Play'; }
+      }
+    }
+
+    // ── Settings ───────────────────────────────────────────────
+    if (typeof loadGuildSettings === 'function') {
+      loadGuildSettings();
+    }
+
+    // ── Live sync via WebSocket ──────────────────────────────────
+    function connectWs() {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      ws = new WebSocket(`${proto}://${location.host}/ws/${GUILD_ID}`);
+      ws.onmessage = (evt) => {
+        const msg = JSON.parse(evt.data);
+        if (msg.type === 'player_update') render(msg.data);
+      };
+      ws.onclose = () => setTimeout(connectWs, 3000);
+    }
+    connectWs();
+
+    // Local position ticker so the progress bar moves smoothly
+    // between server updates, instead of only jumping every few seconds.
+    setInterval(() => {
+      if (currentState && currentState.connected && currentState.current && !currentState.paused) {
+        currentState.position = Math.min(currentState.current.duration, currentState.position + 1000);
+        const pct = currentState.current.duration ? (currentState.position / currentState.current.duration) * 100 : 0;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('time-current').textContent = fmtTime(currentState.position);
+        if (typeof updateLyricsHighlight === 'function') {
+          updateLyricsHighlight(currentState.position);
+        }
+      }
+    }, 1000);
+
+    // Initial fetch (in case WS takes a moment)
+    api('GET', `/api/guilds/${GUILD_ID}/player`).then(render).catch(() => { });
+
+    // ── Playlists Logic ──────────────────────────────────────────
+    let selectedPlaylistId = null;
+    let selectedPlaylistCode = null;
+    let selectedPlaylistIsPublic = false;
+
+    async function loadPlaylists() {
+      try {
+        const playlists = await api('GET', '/api/playlists');
+        const listDiv = document.getElementById('playlists-list');
+        if (!playlists.length) {
+          listDiv.innerHTML = '<div class="empty-queue" style="padding: 20px 10px; font-size:13px;">No playlists found.</div>';
+          return;
+        }
+        listDiv.innerHTML = playlists.map(p => `
+          <div class="playlist-item ${selectedPlaylistId === p.id ? 'active' : ''}" onclick="selectPlaylist(${p.id}, '${escapeHtml(p.name)}', '${p.code || ''}', ${p.is_public})">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="playlist-disc-icon">
+                <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div style="display: flex; flex-direction: column; text-align: left; gap: 3px;">
+                <span class="name-label" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                  <span style="font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500;">${p.track_count} tracks</span>
+                  <span class="pl-badge ${p.is_public ? 'public' : 'private'}">${p.is_public ? '🌐 Public' : '🔒'}</span>
+                </div>
+              </div>
+            </div>
+            <svg class="chevron" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        `).join('');
+      } catch (e) {
+        toast('Failed to load playlists', 'error');
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    async function selectPlaylist(id, name, code, isPublic) {
+      selectedPlaylistId = id;
+      selectedPlaylistCode = code || '';
+      selectedPlaylistIsPublic = !!isPublic;
+      document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
+      loadPlaylists();
+
+      document.getElementById('playlist-empty-panel').style.display = 'none';
+      const details = document.getElementById('playlist-details-panel');
+      details.style.display = 'flex';
+
+      document.getElementById('selected-playlist-name').textContent = name;
+      document.getElementById('selected-playlist-meta').textContent = 'Loading tracks...';
+
+      // Update code display
+      document.getElementById('playlist-code-display').textContent = code || '--------';
+
+      // Update privacy toggle
+      updatePrivacyToggleUI(selectedPlaylistIsPublic);
+
+      await loadPlaylistTracks(id);
+    }
+
+    function updatePrivacyToggleUI(isPublic) {
+      const knob = document.getElementById('toggle-privacy-knob');
+      const track = document.getElementById('toggle-privacy');
+      const label = document.getElementById('privacy-label');
+      if (isPublic) {
+        track.style.background = 'rgba(34,197,94,0.3)';
+        track.style.borderColor = 'rgba(34,197,94,0.5)';
+        knob.style.left = '22px';
+        knob.style.background = '#4ade80';
+        label.textContent = 'Public';
+        label.style.color = '#4ade80';
+      } else {
+        track.style.background = 'rgba(255,255,255,0.08)';
+        track.style.borderColor = 'var(--line)';
+        knob.style.left = '2px';
+        knob.style.background = 'var(--text-low)';
+        label.textContent = 'Private';
+        label.style.color = 'var(--text-low)';
+      }
+    }
+
+    async function loadPlaylistTracks(id) {
+      try {
+        const tracks = await api('GET', `/api/playlists/${id}/tracks`);
+        document.getElementById('selected-playlist-meta').textContent = `${tracks.length} track${tracks.length === 1 ? '' : 's'}`;
+        const tracksList = document.getElementById('playlist-tracks-list');
+        if (!tracks.length) {
+          tracksList.innerHTML = '<div class="pl-tracks-empty">Playlist is empty. Add a song below!</div>';
+          return;
+        }
+        tracksList.innerHTML = tracks.map((t, idx) => `
+          <div class="playlist-track-item">
+            <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
+              <span style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.2); width: 18px; text-align: center; flex-shrink: 0;">${idx + 1}</span>
+              <div style="width: 38px; height: 38px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                ${t.identifier
+            ? `<img src="https://img.youtube.com/vi/${t.identifier}/mqdefault.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+            : ''
+          }
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="display: ${t.identifier ? 'none' : 'flex'}; color: rgba(255,255,255,0.25);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1;">
+                <span style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.title)}</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500;">${escapeHtml(t.author || 'Unknown')}</span>
+              </div>
+            </div>
+            <button class="track-remove-btn" onclick="removeTrack(${id}, ${t.id})" title="Remove">
+              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        `).join('');
+      } catch (e) {
+        toast('Failed to load tracks', 'error');
+      }
+    }
+
+    document.getElementById('btn-create-playlist').addEventListener('click', async () => {
+      const input = document.getElementById('new-playlist-input');
+      const name = input.value.trim();
+      if (!name) return;
+      try {
+        const p = await api('POST', '/api/playlists', { name });
+        toast(`Playlist "${p.name}" created! Code: ${p.code}`, 'success');
+        input.value = '';
+        await loadPlaylists();
+        selectPlaylist(p.id, p.name, p.code, p.is_public);
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    });
+
+    // Copy code button
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
+      const code = document.getElementById('playlist-code-display').textContent;
+      if (!code || code === '--------') return;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('btn-copy-code');
+        btn.textContent = 'Copied!';
+        btn.style.background = 'rgba(34,197,94,0.2)';
+        btn.style.borderColor = 'rgba(34,197,94,0.4)';
+        btn.style.color = '#4ade80';
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.style.background = '';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+        }, 2000);
+      }).catch(() => toast('Failed to copy code', 'error'));
+    });
+
+    // Privacy toggle
+    document.getElementById('toggle-privacy').addEventListener('click', async () => {
+      if (!selectedPlaylistId) return;
+      const newIsPublic = !selectedPlaylistIsPublic;
+      try {
+        await api('PATCH', `/api/playlists/${selectedPlaylistId}/privacy`, { is_public: newIsPublic });
+        selectedPlaylistIsPublic = newIsPublic;
+        updatePrivacyToggleUI(newIsPublic);
+        toast(`Playlist is now ${newIsPublic ? '🌐 Public' : '🔒 Private'}`, 'success');
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    });
+
+    // Play by code
+    document.getElementById('btn-play-by-code').addEventListener('click', async () => {
+      const input = document.getElementById('play-by-code-input');
+      const code = input.value.trim().toUpperCase();
+      if (!code || code.length < 4) { toast('Please enter a valid playlist code', 'error'); return; }
+      const btn = document.getElementById('btn-play-by-code');
+      btn.disabled = true; btn.textContent = 'Loading...';
+      try {
+        const result = await api('POST', `/api/guilds/${GUILD_ID}/play-playlist-code`, { code });
+        toast(result.message, 'success');
+        input.value = '';
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play Code';
+      }
+    });
+    document.getElementById('play-by-code-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-play-by-code').click(); });
+
+    document.getElementById('btn-delete-playlist').addEventListener('click', async () => {
+      if (!selectedPlaylistId) return;
+      if (!confirm('Are you sure you want to delete this playlist?')) return;
+      try {
+        await api('DELETE', `/api/playlists/${selectedPlaylistId}`);
+        toast('Playlist deleted', 'success');
+        selectedPlaylistId = null;
+        document.getElementById('playlist-details-panel').style.display = 'none';
+        document.getElementById('playlist-empty-panel').style.display = 'flex';
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    });
+
+    document.getElementById('btn-rename-playlist').addEventListener('click', async () => {
+      if (!selectedPlaylistId) return;
+      const currentName = document.getElementById('selected-playlist-name').textContent;
+      const newName = prompt('Enter new playlist name:', currentName);
+      if (!newName || !newName.trim() || newName.trim() === currentName) return;
+      try {
+        await api('PATCH', `/api/playlists/${selectedPlaylistId}`, { name: newName.trim() });
+        toast('Playlist renamed', 'success');
+        document.getElementById('selected-playlist-name').textContent = newName.trim();
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    });
+
+    document.getElementById('btn-add-search').addEventListener('click', () => addTrackByQuery());
+    document.getElementById('playlist-add-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTrackByQuery(); });
+
+    async function addTrackByQuery() {
+      if (!selectedPlaylistId) return;
+      const input = document.getElementById('playlist-add-input');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const btn = document.getElementById('btn-add-search');
+      btn.disabled = true; btn.textContent = 'Adding...';
+      try {
+        const result = await api('POST', `/api/playlists/${selectedPlaylistId}/tracks`, { query });
+        toast(`Added "${result.title}"`, 'success');
+        input.value = '';
+        await loadPlaylistTracks(selectedPlaylistId);
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Add Song';
+      }
+    }
+
+    document.getElementById('btn-add-current').addEventListener('click', async () => {
+      if (!selectedPlaylistId) return;
+      if (!currentState || !currentState.current) {
+        toast('Nothing is currently playing', 'error');
+        return;
+      }
+      const track = currentState.current;
+      try {
+        await api('POST', `/api/playlists/${selectedPlaylistId}/tracks`, {
+          title: track.title,
+          author: track.author,
+          uri: track.uri,
+          identifier: track.identifier
+        });
+        toast(`Added "${track.title}"`, 'success');
+        await loadPlaylistTracks(selectedPlaylistId);
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    });
+
+    async function removeTrack(playlistId, trackId) {
+      try {
+        await api('DELETE', `/api/playlists/${playlistId}/tracks/${trackId}`);
+        toast('Song removed', 'success');
+        await loadPlaylistTracks(playlistId);
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    }
+
+    document.getElementById('btn-play-playlist').addEventListener('click', async () => {
+      if (!selectedPlaylistId) return;
+      const btn = document.getElementById('btn-play-playlist');
+      btn.disabled = true; btn.textContent = 'Enqueuing...';
+      try {
+        const result = await api('POST', `/api/guilds/${GUILD_ID}/play-playlist`, { playlist_id: selectedPlaylistId });
+        toast(result.message, 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play in VC';
+      }
+    });
+
+    // Mobile sidebar toggle script
+    const toggleBtn = document.getElementById('mobile-menu-toggle');
+    const sidebarEl = document.querySelector('.sidebar');
+    const overlayEl = document.getElementById('sidebar-overlay');
+
+    if (toggleBtn && sidebarEl && overlayEl) {
+      toggleBtn.addEventListener('click', () => {
+        sidebarEl.classList.add('open');
+        overlayEl.classList.add('open');
+      });
+
+      overlayEl.addEventListener('click', () => {
+        sidebarEl.classList.remove('open');
+        overlayEl.classList.remove('open');
+      });
+
+      sidebarEl.querySelectorAll('a, .nav-btn').forEach(el => {
+        el.addEventListener('click', () => {
+          sidebarEl.classList.remove('open');
+          overlayEl.classList.remove('open');
+        });
+      });
+    }
+
+    loadPlaylists();
+
+    const field = document.getElementById('petals');
+    for (let i = 0; i < 6; i++) {
+      const p = document.createElement('span');
+      p.className = 'petal';
+      p.textContent = '❀';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.setProperty('--drift', (Math.random() * 100 - 50) + 'px');
+      p.style.animationDuration = (20 + Math.random() * 10) + 's';
+      p.style.animationDelay = (Math.random() * -20) + 's';
+      p.style.opacity = '0.25';
+      field.appendChild(p);
+    }
+
+    // ── Leaderboard Logic ────────────────────────────────────────
+    let currentLeaderboardTimeframe = 'all';
+
+    async function changeLeaderboardTimeframe(timeframe) {
+      currentLeaderboardTimeframe = timeframe;
+      document.querySelectorAll('.time-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.timeframe === timeframe);
+      });
+      await loadLeaderboard(timeframe);
+    }
+
+    let loadedLeaderboardData = []; // Store loaded data globally
+
+    async function loadLeaderboard(timeframe) {
+      const container = document.getElementById('leaderboard-container');
+      container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; padding: 60px;">
+          <div style="color: var(--text-low); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>
+            Loading leaderboard...
+          </div>
+        </div>`;
+
+      try {
+        const data = await api('GET', `/api/leaderboard?timeframe=${timeframe}`);
+        loadedLeaderboardData = data || [];
+        renderLeaderboardList(loadedLeaderboardData);
+      } catch (e) {
+        container.innerHTML = `
+          <div class="empty-queue" style="padding: 40px; text-align: center; color: var(--danger); border-color: rgba(248, 113, 113, 0.2);">
+            Failed to load leaderboard: ${escapeHtml(e.message)}
+          </div>`;
+      }
+    }
+
+    function renderLeaderboardList(playlists) {
+      const container = document.getElementById('leaderboard-container');
+      
+      // Get filter query
+      const query = (document.getElementById('leaderboard-search')?.value || '').trim().toLowerCase();
+      const filtered = playlists.filter(item => 
+        item.name.toLowerCase().includes(query) || 
+        item.owner_name.toLowerCase().includes(query) ||
+        item.code.toLowerCase().includes(query)
+      );
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="empty-queue" style="padding: 60px 40px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius-md);">
+            <span style="font-size: 32px; display: block; margin-bottom: 12px;">📊</span>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--text-hi); margin: 0 0 4px;">No playlists found</h3>
+            <p style="font-size: 13px; color: var(--text-low); margin: 0;">Try searching for a different name, author, or code.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map((item, idx) => {
+        const rank = playlists.indexOf(item) + 1;
+
+        let cardStyle = 'background: var(--bg-panel); border: 1px solid var(--line);';
+        let rankBadge = `<div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.06); color: var(--text-mid); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">${rank}</div>`;
+
+        if (rank === 1) {
+          cardStyle = 'background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.005) 70%), var(--bg-panel); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 0 20px rgba(255, 255, 255, 0.04);';
+          rankBadge = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #ffffff; color: #050507; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px;" title="1st Place">🥇</div>`;
+        } else if (rank === 2) {
+          cardStyle = 'background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.002) 70%), var(--bg-panel); border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: 0 0 15px rgba(255, 255, 255, 0.03);';
+          rankBadge = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #e4e4e7; color: #050507; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px;" title="2nd Place">🥈</div>`;
+        } else if (rank === 3) {
+          cardStyle = 'background: linear-gradient(135deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.0) 70%), var(--bg-panel); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 0 12px rgba(255, 255, 255, 0.02);';
+          rankBadge = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #a1a1aa; color: #050507; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px;" title="3rd Place">🥉</div>`;
+        }
+
+        return `
+          <div class="leaderboard-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-radius: var(--radius-md); ${cardStyle} transition: all 0.25s ease; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 240px; text-align: left;">
+              ${rankBadge}
+              <div>
+                <div style="font-size: 15px; font-weight: 700; color: var(--text-hi); display: flex; align-items: center; gap: 8px;">
+                  ${escapeHtml(item.name)}
+                  <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,0.06); color: var(--text-low); white-space: nowrap;">${item.track_count} tracks</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-low); margin-top: 3px; font-weight: 500;">
+                  by <span style="font-weight: 600; color: var(--text-mid);">${escapeHtml(item.owner_name)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.15); border: 1px solid var(--line); padding: 4px 8px 4px 12px; border-radius: 8px;">
+              <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-low); letter-spacing: 0.05em; font-family: var(--font-body);">Code</span>
+              <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 800; color: var(--text-hi); letter-spacing: 0.05em;">${item.code}</span>
+              <button class="btn" onclick="copyLeaderboardCode('${item.code}', this)" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; border: 1px solid var(--line); background: rgba(255,255,255,0.02); height: 26px;">Copy</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <div style="text-align: right; min-width: 60px;">
+                <div style="font-size: 15px; font-weight: 850; color: var(--text-hi); display: flex; align-items: center; gap: 4px; justify-content: flex-end;">
+                  🔥 ${item.play_count}
+                </div>
+                <div style="font-size: 10px; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">plays</div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="btn" onclick="viewLeaderboardPlaylist('${item.code}')" style="padding: 8px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(255,255,255,0.03); height: 36px;">
+                  View
+                </button>
+                <button class="btn btn-primary" onclick="playLeaderboardPlaylist('${item.code}', this)" style="padding: 8px 14px; font-size: 12px; font-weight: 750; border-radius: var(--radius-sm); height: 36px; display: flex; align-items: center;">
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="margin-right: 5px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Play in VC
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function viewLeaderboardPlaylist(code) {
+      const modal = document.getElementById('leaderboard-modal');
+      const tracksContainer = document.getElementById('lb-modal-tracks');
+      const titleEl = document.getElementById('lb-modal-title');
+      const metaEl = document.getElementById('lb-modal-meta');
+      const playBtn = document.getElementById('lb-modal-play-btn');
+      const copyBtn = document.getElementById('lb-modal-copy-btn');
+
+      titleEl.textContent = 'Loading playlist...';
+      metaEl.textContent = '';
+      tracksContainer.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text-low); font-size: 13px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite; margin-right: 8px;"><circle cx="12" cy="12" r="10" stroke-opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>
+          Fetching tracks list...
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+      }, 10);
+
+      try {
+        const data = await api('GET', `/api/playlists/code/${code}`);
+        titleEl.textContent = data.name;
+        metaEl.textContent = `${data.track_count} tracks · Code: ${data.code}`;
+        
+        playBtn.onclick = (e) => playLeaderboardPlaylist(code, playBtn);
+        copyBtn.onclick = (e) => {
+          navigator.clipboard.writeText(code).then(() => {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            copyBtn.style.color = '#4ade80';
+            setTimeout(() => {
+              copyBtn.textContent = originalText;
+              copyBtn.style.color = '';
+            }, 2000);
+          });
+        };
+
+        if (!data.tracks || !data.tracks.length) {
+          tracksContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-low); font-size: 13px;">Playlist has no tracks.</div>';
+          return;
+        }
+
+        tracksContainer.innerHTML = data.tracks.map((t, idx) => {
+          const thumbUrl = t.identifier ? `https://img.youtube.com/vi/${t.identifier}/mqdefault.jpg` : '';
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid transparent; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='rgba(255,255,255,0.08)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.borderColor='transparent';">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                <span style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.2); width: 18px; text-align: center; flex-shrink: 0;">${idx + 1}</span>
+                <div style="width: 38px; height: 38px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="display: ${thumbUrl ? 'none' : 'flex'}; color: rgba(255,255,255,0.25);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; text-align: left;">
+                  <span style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</span>
+                  <span style="font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500;">${escapeHtml(t.author || 'Unknown')}</span>
+                </div>
+              </div>
+              <button class="btn btn-icon" onclick="playSingleTrack('${escapeHtml(t.uri)}', this)" title="Play this song" style="width: 28px; height: 28px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+            </div>
+          `;
+        }).join('');
+
+      } catch (e) {
+        titleEl.textContent = 'Error';
+        tracksContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--danger); font-size: 13px;">Failed to load tracks: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    async function playSingleTrack(uri, btn) {
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>`;
+      try {
+        const result = await api('POST', `/api/guilds/${GUILD_ID}/play`, { query: uri });
+        toast(result.message, 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    function closeLeaderboardModal() {
+      const modal = document.getElementById('leaderboard-modal');
+      modal.style.opacity = '0';
+      modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 250);
+    }
+
+    function copyLeaderboardCode(code, btn) {
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.borderColor = 'rgba(255,255,255,0.4)';
+        btn.style.color = '#ffffff';
+        btn.style.background = 'rgba(255,255,255,0.08)';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.borderColor = '';
+          btn.style.color = '';
+          btn.style.background = '';
+        }, 2000);
+      }).catch(() => toast('Failed to copy code', 'error'));
+    }
+
+    async function playLeaderboardPlaylist(code, btn) {
+      if (!code) return;
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite; margin-right: 5px;"><circle cx="12" cy="12" r="10" stroke-opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg> Play`;
+      try {
+        const res = await api('POST', `/api/guilds/${GUILD_ID}/play-playlist-code`, { code });
+        toast(res.message, 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    function formatDuration(ms) {
+      if (!ms || isNaN(ms)) return '0:00';
+      const sec = Math.floor((ms / 1000) % 60);
+      const min = Math.floor((ms / (1000 * 60)) % 60);
+      const hrs = Math.floor((ms / (1000 * 60 * 60)));
+      const secStr = sec < 10 ? '0' + sec : sec;
+      if (hrs > 0) {
+        const minStr = min < 10 ? '0' + min : min;
+        return `${hrs}:${minStr}:${secStr}`;
+      }
+      return `${min}:${secStr}`;
+    }
+
+    function setupAutocomplete(inputId, suggestionsId, onSelectCallback) {
+      const input = document.getElementById(inputId);
+      const suggestions = document.getElementById(suggestionsId);
+      let debounceTimeout = null;
+
+      input.addEventListener('input', () => {
+        clearTimeout(debounceTimeout);
+        const query = input.value.trim();
+        if (!query) {
+          suggestions.classList.remove('active');
+          suggestions.innerHTML = '';
+          return;
+        }
+
+        // Show loading state immediately
+        suggestions.innerHTML = `
+          <div class="suggestion-loading" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; color: var(--text-low); font-size: 13px; font-weight: 500;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite;">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.2"/>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/>
+            </svg>
+            Searching tracks...
+          </div>
+        `;
+        suggestions.classList.add('active');
+
+        debounceTimeout = setTimeout(async () => {
+          try {
+            if (input.value.trim() !== query) return;
+
+            const data = await api('GET', `/api/search?query=${encodeURIComponent(query)}`);
+            
+            if (input.value.trim() !== query) return;
+
+            if (!data.tracks || !data.tracks.length) {
+              suggestions.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-low); font-size: 13px;">No results found.</div>`;
+              return;
+            }
+
+            suggestions.innerHTML = data.tracks.map(t => {
+              const durationStr = formatDuration(t.duration);
+              const thumbUrl = t.identifier 
+                ? `https://img.youtube.com/vi/${t.identifier}/mqdefault.jpg`
+                : '';
+              
+              return `
+                <div class="suggestion-item" data-title="${escapeHtml(t.title)}" data-author="${escapeHtml(t.author)}" data-uri="${escapeHtml(t.uri)}" data-identifier="${escapeHtml(t.identifier || '')}">
+                  ${thumbUrl ? `<img src="${thumbUrl}" class="suggestion-thumb" onerror="this.style.display='none';">` : ''}
+                  <div class="suggestion-info">
+                    <span class="suggestion-title">${escapeHtml(t.title)}</span>
+                    <span class="suggestion-author">${escapeHtml(t.author || 'Unknown')}</span>
+                  </div>
+                  <span class="suggestion-duration">${durationStr}</span>
+                </div>
+              `;
+            }).join('');
+
+            suggestions.classList.add('active');
+
+            // Add click handlers to suggestion items
+            suggestions.querySelectorAll('.suggestion-item').forEach(item => {
+              item.addEventListener('click', () => {
+                const track = {
+                  title: item.dataset.title,
+                  author: item.dataset.author,
+                  uri: item.dataset.uri,
+                  identifier: item.dataset.identifier || null
+                };
+                onSelectCallback(track);
+                suggestions.classList.remove('active');
+                suggestions.innerHTML = '';
+                input.value = '';
+              });
+            });
+
+          } catch (e) {
+            console.error('Search failed', e);
+            if (input.value.trim() === query) {
+              suggestions.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--danger); font-size: 13px;">Failed to fetch results.</div>`;
+            }
+          }
+        }, 300);
+      });
+
+      // Hide suggestions when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+          suggestions.classList.remove('active');
+        }
+      });
+
+      // Also hide suggestions when escape key is pressed
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          suggestions.classList.remove('active');
+        }
+      });
+    }
+
+    // Initialize Autocomplete for both search bars
+    setupAutocomplete('playlist-add-input', 'playlist-add-suggestions', async (track) => {
+      if (!selectedPlaylistId) return;
+      try {
+        const result = await api('POST', `/api/playlists/${selectedPlaylistId}/tracks`, {
+          title: track.title,
+          author: track.author,
+          uri: track.uri,
+          identifier: track.identifier
+        });
+        toast(`Added "${result.title}"`, 'success');
+        await loadPlaylistTracks(selectedPlaylistId);
+        await loadPlaylists();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    });
+
+    setupAutocomplete('search-input', 'main-search-suggestions', async (track) => {
+      const btn = document.getElementById('search-btn');
+      btn.disabled = true; btn.textContent = 'Adding…';
+      try {
+        const result = await api('POST', `/api/guilds/${GUILD_ID}/play`, { query: track.uri });
+        toast(result.message, 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Play';
+      }
+    });
+
+    // Setup leaderboard search keyup/input filter
+    document.getElementById('leaderboard-search').addEventListener('input', () => {
+      renderLeaderboardList(loadedLeaderboardData);
+    });
+
+    // Modal Close logic register
+    document.getElementById('lb-modal-close').addEventListener('click', closeLeaderboardModal);
+    document.getElementById('leaderboard-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('leaderboard-modal')) {
+        closeLeaderboardModal();
+      }
+    });
+
+    let currentParsedLyrics = [];
+    let isLyricsSynced = false;
+
+    function parseLrc(lrcText) {
+      if (!lrcText) return [];
+      const lines = lrcText.split('\n');
+      const timeRegex = /\[(\d+):(\d+)\.(\d+)\]/;
+      const parsed = [];
+
+      for (const line of lines) {
+        const match = timeRegex.exec(line);
+        if (match) {
+          const minutes = parseInt(match[1]);
+          const seconds = parseInt(match[2]);
+          const hundredths = parseInt(match[3]);
+          
+          let ms = hundredths;
+          if (match[3].length === 2) {
+            ms = hundredths * 10;
+          } else if (match[3].length === 1) {
+            ms = hundredths * 100;
+          }
+          
+          const timeMs = (minutes * 60 + seconds) * 1000 + ms;
+          const text = line.replace(timeRegex, '').trim();
+          parsed.push({ timeMs, text });
+        }
+      }
+      parsed.sort((a, b) => a.timeMs - b.timeMs);
+      return parsed;
+    }
+
+    async function seekToLyric(timeMs) {
+      try {
+        await api('POST', `/api/guilds/${GUILD_ID}/seek`, { position: timeMs });
+        toast(`Seeked to ${fmtTime(timeMs)}`, 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    }
+
+    function updateLyricsHighlight(currentPosMs) {
+      if (!isLyricsSynced || currentParsedLyrics.length === 0) return;
+
+      let activeIndex = -1;
+      for (let i = 0; i < currentParsedLyrics.length; i++) {
+        if (currentParsedLyrics[i].timeMs <= currentPosMs) {
+          activeIndex = i;
+        } else {
+          break;
+        }
+      }
+
+      if (activeIndex !== -1) {
+        const lines = document.querySelectorAll('.lyrics-line');
+        lines.forEach((line, idx) => {
+          if (idx === activeIndex) {
+            line.style.color = '#ffffff';
+            line.style.opacity = '1';
+            line.style.transform = 'scale(1.08)';
+            line.style.textShadow = '0 0 15px rgba(255,255,255,0.5)';
+          } else {
+            line.style.color = 'rgba(255,255,255,0.25)';
+            line.style.opacity = '0.4';
+            line.style.transform = 'scale(1)';
+            line.style.textShadow = 'none';
+          }
+        });
+
+        const activeLineEl = document.getElementById(`lyric-line-${activeIndex}`);
+        if (activeLineEl) {
+          const container = document.getElementById('lyrics-text-container');
+          const containerHeight = container.clientHeight;
+          const lineOffsetTop = activeLineEl.offsetTop;
+          const lineHeight = activeLineEl.clientHeight;
+          
+          container.scrollTo({
+            top: lineOffsetTop - (containerHeight / 2) + (lineHeight / 2),
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+    window.seekToLyric = seekToLyric;
+    window.updateLyricsHighlight = updateLyricsHighlight;
+
+    async function loadLyrics(forceQuery = null) {
+      const container = document.getElementById('lyrics-text-container');
+      const titleEl = document.getElementById('lyrics-track-title');
+      const artistEl = document.getElementById('lyrics-track-artist');
+
+      if (!forceQuery && (!currentState || !currentState.current)) {
+        titleEl.textContent = 'No track playing';
+        artistEl.textContent = '';
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; gap: 14px;">
+            <div style="font-size: 40px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.05));">🌙</div>
+            <div>
+              <h4 style="font-size: 16px; font-weight: 700; color: var(--text-hi); margin: 0 0 6px;">Nothing Playing Right Now</h4>
+              <p style="font-size: 13px; color: var(--text-low); max-width: 320px; margin: 0 auto; line-height: 1.5; font-weight: 500;">
+                Play a song in the voice channel first, or search for lyrics manually using the box above.
+              </p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      titleEl.textContent = forceQuery ? 'Searching...' : currentState.current.title;
+      artistEl.textContent = forceQuery ? `Query: ${forceQuery}` : currentState.current.author;
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 16px; min-height: 200px;">
+          <div style="width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.06); border-top-color: rgba(255,255,255,0.8); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+          <span style="font-size: 13px; color: var(--text-low); font-weight: 500; letter-spacing: 0.5px;">Fetching lyrics...</span>
+        </div>`;
+
+      try {
+        let url = `/api/guilds/${GUILD_ID}/lyrics`;
+        if (forceQuery) {
+          url += `?q=${encodeURIComponent(forceQuery)}`;
+        }
+        const data = await api('GET', url);
+        if (data.ok) {
+          titleEl.textContent = data.title;
+          artistEl.textContent = data.artist;
+          
+          if (data.synced) {
+            currentParsedLyrics = parseLrc(data.synced);
+            isLyricsSynced = currentParsedLyrics.length > 0;
+          } else {
+            isLyricsSynced = false;
+            currentParsedLyrics = [];
+          }
+
+          if (isLyricsSynced) {
+            container.innerHTML = currentParsedLyrics.map((line, idx) => {
+              return `<div class="lyrics-line" id="lyric-line-${idx}" data-time="${line.timeMs}" style="font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.25); margin: 16px 0; transition: all 0.3s ease; cursor: pointer;" onclick="seekToLyric(${line.timeMs})">${escapeHtml(line.text)}</div>`;
+            }).join('');
+            
+            // Trigger initial highlight if we have a current position
+            if (currentState) {
+              updateLyricsHighlight(currentState.position);
+            }
+          } else {
+            container.textContent = data.lyrics;
+          }
+        } else {
+          isLyricsSynced = false;
+          currentParsedLyrics = [];
+          container.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; gap: 14px;">
+              <div style="font-size: 40px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));">🔍</div>
+              <div>
+                <h4 style="font-size: 16px; font-weight: 700; color: var(--text-hi); margin: 0 0 6px;">Lyrics Not Found</h4>
+                <p style="font-size: 13px; color: var(--text-low); max-width: 340px; margin: 0 auto; line-height: 1.5; font-weight: 500;">
+                  We couldn't find lyrics for this track automatically. Try searching manually above by writing the song name and artist!
+                </p>
+              </div>
+            </div>`;
+        }
+      } catch (e) {
+        isLyricsSynced = false;
+        currentParsedLyrics = [];
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; gap: 14px;">
+            <div style="font-size: 40px; filter: drop-shadow(0 0 10px rgba(239,68,68,0.2));">⚠️</div>
+            <div>
+              <h4 style="font-size: 16px; font-weight: 700; color: #f87171; margin: 0 0 6px;">Failed to Fetch Lyrics</h4>
+              <p style="font-size: 13px; color: var(--text-low); max-width: 320px; margin: 0 auto; line-height: 1.5; font-weight: 500;">
+                ${escapeHtml(e.message || 'Connection timeout.')}
+              </p>
+            </div>
+          </div>`;
+      }
+    }
+
+    // Lyrics event listeners
+    document.getElementById('lyrics-search-btn').addEventListener('click', () => {
+      const q = document.getElementById('lyrics-search-input').value.trim();
+      if (q) {
+        loadLyrics(q);
+      }
+    });
+
+    document.getElementById('lyrics-search-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = e.target.value.trim();
+        if (q) {
+          loadLyrics(q);
+        }
+      }
+    });
+
+    document.getElementById('lyrics-sync-btn').addEventListener('click', () => {
+      document.getElementById('lyrics-search-input').value = '';
+      loadLyrics();
+    });
+
+    window.changeLeaderboardTimeframe = changeLeaderboardTimeframe;
+    window.loadLeaderboard = loadLeaderboard;
+    window.copyLeaderboardCode = copyLeaderboardCode;
+    window.playLeaderboardPlaylist = playLeaderboardPlaylist;
+    window.viewLeaderboardPlaylist = viewLeaderboardPlaylist;
+    window.playSingleTrack = playSingleTrack;
+    window.loadLyrics = loadLyrics;
+
+    async function loadStats() {
+      const topContainer = document.getElementById('stats-top-container');
+      const recentContainer = document.getElementById('stats-recent-container');
+      
+      topContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-low); font-size: 13px;">Loading stats...</div>';
+      recentContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-low); font-size: 13px;">Loading history...</div>';
+      
+      try {
+        const data = await api('GET', `/api/guilds/${GUILD_ID}/music-stats`);
+        
+        if (data.top && data.top.length > 0) {
+          topContainer.innerHTML = data.top.map((t, idx) => `
+            <div class="stats-track-item">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; text-align: left;">
+                <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-low); width: 24px; text-align: center;">${idx + 1}</span>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 700; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
+                  <div style="font-size: 12px; color: var(--text-low); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${escapeHtml(t.author)}</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-low); font-weight: 600; background: rgba(255,255,255,0.03); padding: 2px 6px; border-radius: 4px;">${t.play_count} plays</span>
+                <button class="btn btn-icon" onclick="playTrackFromStats('${escapeHtml(t.uri)}')" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Play Track">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          topContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 10px; color: var(--text-low); text-align: center; gap: 8px;">
+              <span style="font-size: 32px;">🔥</span>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-hi);">No Stats Yet</div>
+              <div style="font-size: 11px;">Play some songs in voice to generate stats.</div>
+            </div>`;
+        }
+        
+        if (data.recent && data.recent.length > 0) {
+          recentContainer.innerHTML = data.recent.map((t, idx) => {
+            const timeAgo = fmtTimeAgo(t.played_at);
+            return `
+              <div class="stats-track-item">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; text-align: left;">
+                  <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-low); width: 24px; text-align: center;">${idx + 1}</span>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
+                    <div style="font-size: 12px; color: var(--text-low); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${escapeHtml(t.author)}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                  <span style="font-size: 11px; color: var(--text-low); font-weight: 500;">${timeAgo}</span>
+                  <button class="btn btn-icon" onclick="playTrackFromStats('${escapeHtml(t.uri)}')" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Play Track">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          recentContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 10px; color: var(--text-low); text-align: center; gap: 8px;">
+              <span style="font-size: 32px;">🕒</span>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-hi);">No History Yet</div>
+              <div style="font-size: 11px;">Tracks played in this server will appear here.</div>
+            </div>`;
+        }
+      } catch (e) {
+        topContainer.innerHTML = `<div style="color: var(--danger); font-size: 13px; padding: 20px;">Failed to load stats: ${escapeHtml(e.message)}</div>`;
+        recentContainer.innerHTML = `<div style="color: var(--danger); font-size: 13px; padding: 20px;">Failed to load history: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function fmtTimeAgo(ts) {
+      const diff = Math.floor(Date.now() / 1000) - ts;
+      if (diff < 60) return 'Just now';
+      const mins = Math.floor(diff / 60);
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      return `${days}d ago`;
+    }
+
+    async function playTrackFromStats(uri) {
+      try {
+        const result = await api('POST', `/api/guilds/${GUILD_ID}/play`, { query: uri });
+        toast(result.message || 'Queued song from stats!', 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    }
+
+    window.loadStats = loadStats;
+    window.fmtTimeAgo = fmtTimeAgo;
+    window.playTrackFromStats = playTrackFromStats;
+  </script>
+</body>
+
+</html>
