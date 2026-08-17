@@ -167,24 +167,6 @@ python main.py
 
 ---
 
-## 🌐 Custom Domain Setup (Cloudflare)
-
-> [!TIP]
-> To connect a custom domain (e.g., `https://yourdomain.com`):
-
-1. **Cloudflare DNS**: Point your domain to Cloudflare and add an `A` record pointing to your server IP with **Proxied (Orange Cloud ☁️)**.
-2. **Origin Rule**: Set Cloudflare Origin Rule mapping port `3000`.
-3. **Environment**: Update `.env` with `DASHBOARD_URL=https://yourdomain.com` and `DASHBOARD_REDIRECT_URI=https://yourdomain.com/auth/callback`.
-4. **Discord Portal**: Add `https://yourdomain.com/auth/callback` under Discord OAuth2 Redirects.
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more details.
-
----
-
 <div align="center">
   <b>Designed with 🌹 for Discord Communities</b>
 </div>
